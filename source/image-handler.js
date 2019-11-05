@@ -42,20 +42,32 @@ class ImageHandler {
      * @param {Object} edits - The edits to be made to the original image.
      */
     async applyEdits(originalImage, edits) {
-        const image = sharp(originalImage);
+        const image = sharp(originalImage).rotate();
         const keys = Object.keys(edits);
         const values = Object.values(edits);
+        
         // Apply the image edits
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
             const value = values[i];
-            if (key === 'overlayWith') {
-                const overlay = await this.getOverlayImage(value.bucket, value.key);
-                image.overlayWith(overlay, value.options);
+
+            if (key === 'composite') {
+                let overlay = await this.getOverlayImage(value.bucket, value.key);
+                let metadata = await image.metadata();
+
+                if (keys.includes('resize')) {
+                    metadata.width = edits.resize.width;
+                    metadata.height = edits.resize.height;
+                }
+                
+                let overlayResize = await sharp(overlay).resize(metadata.width, metadata.height).toBuffer();
+                
+                image.composite([{ input: overlayResize }]);
             } else {
                 image[key](value);
             }
         }
+
         // Return the modified image
         return image;
     }

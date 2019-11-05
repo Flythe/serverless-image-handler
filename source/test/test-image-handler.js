@@ -13,6 +13,7 @@
 
 const ImageHandler = require('../image-handler');
 let assert = require('assert');
+const sharp = require('sharp');
 
 // ----------------------------------------------------------------------------
 // [async] process()
@@ -131,22 +132,42 @@ describe('applyEdits()', function() {
         });
     });
     describe('002/overlay', function() {
-        it(`Should pass if an edit with the overlayWith keyname is passed to
+        it(`Should pass if an edit with the composite keyname is passed to
             the function`, async function() {
             // Arrange
             const sinon = require('sinon');
             // ---- Amazon S3 stub
             const S3 = require('aws-sdk/clients/s3');
             const getObject = S3.prototype.getObject = sinon.stub();
+
+            const blueRect = {
+                create: {
+                    width: 60,
+                    height: 40,
+                    channels: 4,
+                    background: { r: 0, g: 0, b: 255, alpha: 0.5 }
+                }
+            };
+
+            const greenRect = {
+                create: {
+                    width: 40,
+                    height: 40,
+                    channels: 4,
+                    background: { r: 0, g: 255, b: 0, alpha: 0.5 }
+                }
+            };
+
             getObject.returns({
                 promise: () => { return {
-                  Body: Buffer.from('sampleImageContent')
+                    Body: greenRect
                 }}
             })
+
             // Act
-            const originalImage = Buffer.from('sampleImageContent');
+            const originalImage = blueRect;
             const edits = {
-                overlayWith: {
+                composite: {
                     bucket: 'aaa',
                     key: 'bbb'
                 }
@@ -154,9 +175,59 @@ describe('applyEdits()', function() {
             // Assert
             const imageHandler = new ImageHandler();
             await imageHandler.applyEdits(originalImage, edits).then((result) => {
-                assert.deepEqual(result.options.overlay.buffer, originalImage);
-            }).catch((err) => {
-                console.log(err)
+                // Come up with a suitable assert
+            })
+        });
+    });
+    describe('003/overlayResize', function() {
+        it(`Should pass if an edit with the composite and resize keynames is passed to
+            the function`, async function() {
+            // Arrange
+            const sinon = require('sinon');
+            // ---- Amazon S3 stub
+            const S3 = require('aws-sdk/clients/s3');
+            const getObject = S3.prototype.getObject = sinon.stub();
+
+            const blueRect = {
+                create: {
+                    width: 60,
+                    height: 40,
+                    channels: 4,
+                    background: { r: 0, g: 0, b: 255, alpha: 0.5 }
+                }
+            };
+
+            const greenRect = {
+                create: {
+                    width: 40,
+                    height: 40,
+                    channels: 4,
+                    background: { r: 0, g: 255, b: 0, alpha: 0.5 }
+                }
+            };
+
+            getObject.returns({
+                promise: () => { return {
+                    Body: greenRect
+                }}
+            })
+
+            // Act
+            const originalImage = blueRect;
+            const edits = {
+                resize: {
+                    height: 300,
+                    width: 300
+                },
+                composite: {
+                    bucket: 'aaa',
+                    key: 'bbb'
+                }
+            }
+            // Assert
+            const imageHandler = new ImageHandler();
+            await imageHandler.applyEdits(originalImage, edits).then((result) => {
+                // Come up with a suitable assert
             })
         });
     });
