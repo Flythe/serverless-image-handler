@@ -9,12 +9,12 @@
   "private": true,
   "license": "ISC",
   "dependencies": {
-    "mocha": "^6.1.4",
-    "sharp": "^0.23.1",
-    "sinon": "^7.3.2",
-    "nyc": "^14.0.0"
+    "sharp": "^0.23.1"
   },
   "devDependencies": {
+    "mocha": "^6.1.4",
+    "sinon": "^7.3.2",
+    "nyc": "^14.0.0",
     "aws-sdk": "^2.437.0",
     "aws-sdk-mock": "^4.4.0"
   },
