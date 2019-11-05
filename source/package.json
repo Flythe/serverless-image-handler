@@ -16,9 +16,11 @@
     "sinon": "^7.3.2",
     "nyc": "^14.0.0",
     "aws-sdk": "^2.437.0",
-    "aws-sdk-mock": "^4.4.0"
+    "aws-sdk-mock": "^4.4.0",
+    "btoa": "^1.2.1"
   },
   "scripts": {
+    "pretest": "npm install",
     "test": "nyc --reporter=html --reporter=text mocha",
     "build:init": "rm -rf package-lock.json && rm -rf dist && rm -rf node_modules",
     "build:zip": "zip -rq image-handler.zip . -x template.yml",
