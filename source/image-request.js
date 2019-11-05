@@ -49,7 +49,7 @@ class ImageRequest {
         }
         catch(err) {
             return Promise.reject({
-                status: 500,
+                status: 404,
                 code: err.code,
                 message: err.message
             })
