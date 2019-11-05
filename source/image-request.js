@@ -20,11 +20,11 @@ class ImageRequest {
      */
     async setup(event) {
         try {
-            this.parseRequestType(event);
+            this.isValidRequest(event);
 
             this.bucket = this.parseImageBucket(event);
-            this.key = this.parseImageKey(event);
-            this.edits = this.parseImageEdits(event);
+            this.key = this.getImageKey(event);
+            this.edits = this.getImageEdits(event);
             this.originalImage = await this.getOriginalImage(this.bucket, this.key)
             return Promise.resolve(this);
         } catch (err) {
@@ -87,7 +87,7 @@ class ImageRequest {
      * Parses the edits to be made to the original image.
      * @param {String} event - Lambda request body.
      */
-    parseImageEdits(event) {
+    getImageEdits(event) {
         const decoded = this.decodeRequest(event);
         return decoded.edits;
     }
@@ -97,18 +97,17 @@ class ImageRequest {
      * original image.
      * @param {String} event - Lambda request body.
      */
-    parseImageKey(event) {
+    getImageKey(event) {
         // Decode the image request and return the image key
         const decoded = this.decodeRequest(event);
         return decoded.key;
     }
 
     /**
-     * Determines how to handle the request being made based on the URL path
-     * prefix to the image request.
+     * Determines whether a valid path is passed otherwise throws an error.
      * @param {Object} event - Lambda request body.
     */
-    parseRequestType(event) {
+    isValidRequest(event) {
         const path = event["path"];
         // ----
         const matchDefault = new RegExp(/^(\/?)([0-9a-zA-Z+\/]{4})*(([0-9a-zA-Z+\/]{2}==)|([0-9a-zA-Z+\/]{3}=))?$/);

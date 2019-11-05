@@ -185,9 +185,9 @@ describe('parseImageBucket()', function() {
 });
 
 // ----------------------------------------------------------------------------
-// parseImageEdits()
+// getImageEdits()
 // ----------------------------------------------------------------------------
-describe('parseImageEdits()', function() {
+describe('getImageEdits()', function() {
     describe('001/defaultRequestType', function() {
         it(`Should pass if the proper result is returned for a sample base64-
             encoded image request`, function() {
@@ -197,7 +197,7 @@ describe('parseImageEdits()', function() {
             }
             // Act
             const imageRequest = new ImageRequest();
-            const result = imageRequest.parseImageEdits(event, 'Default');
+            const result = imageRequest.getImageEdits(event, 'Default');
             // Assert
             const expectedResult = {
                 grayscale: 'true',
@@ -210,9 +210,9 @@ describe('parseImageEdits()', function() {
 });
 
 // ----------------------------------------------------------------------------
-// parseImageKey()
+// getImageKey()
 // ----------------------------------------------------------------------------
-describe('parseImageKey()', function() {
+describe('getImageKey()', function() {
     describe('001/defaultRequestType', function() {
         it(`Should pass if an image key value is provided in the default
             request format`, function() {
@@ -222,7 +222,7 @@ describe('parseImageKey()', function() {
             }
             // Act
             const imageRequest = new ImageRequest();
-            const result = imageRequest.parseImageKey(event, 'Default');
+            const result = imageRequest.getImageKey(event, 'Default');
             // Assert
             const expectedResult = 'sample-image-001.jpg';
             assert.deepEqual(result, expectedResult);
@@ -231,9 +231,9 @@ describe('parseImageKey()', function() {
 });
 
 // ----------------------------------------------------------------------------
-// parseRequestType()
+// isValidRequest()
 // ----------------------------------------------------------------------------
-describe('parseRequestType()', function() {
+describe('isValidRequest()', function() {
     describe('001/defaultRequestType', function() {
         it(`Should pass if the method detects a default request`, function() {
             // Arrange
@@ -243,7 +243,7 @@ describe('parseRequestType()', function() {
             process.env = {};
             // Act
             const imageRequest = new ImageRequest();
-            const result = imageRequest.parseRequestType(event);
+            const result = imageRequest.isValidRequest(event);
             // Assert
             const expectedResult = 'Default';
             assert.deepEqual(result, expectedResult);
@@ -261,7 +261,7 @@ describe('parseRequestType()', function() {
             const imageRequest = new ImageRequest();
             // Assert
             assert.throws(function() {
-                const a = imageRequest.parseRequestType(event);
+                const a = imageRequest.isValidRequest(event);
             }, Object, {
                 status: 400,
                 code: 'RequestType::CannotDetermineRequestType',
