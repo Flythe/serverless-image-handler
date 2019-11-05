@@ -19,7 +19,6 @@
     "aws-sdk-mock": "^4.4.0"
   },
   "scripts": {
-    "pretest": "npm install",
     "test": "nyc --reporter=html --reporter=text mocha",
     "build:init": "rm -rf package-lock.json && rm -rf dist && rm -rf node_modules",
     "build:zip": "zip -rq image-handler.zip . -x template.yml",

@@ -14,7 +14,7 @@
             "Type" : "String"
         },
         "SourceBuckets" : {
-            "Description" : "(Required) List the buckets (comma-separated) within your account that contain original image files. If you plan to use Thumbor or Custom image requests with this solution, the source bucket for those requests will be the first bucket listed in this field.",
+            "Description" : "(Required) List the buckets (comma-separated) within your account that contain original image files.",
             "Default" : "defaultBucket, bucketNo2, bucketNo3, ...",
             "Type" : "String",
             "AllowedPattern" : ".+"
@@ -222,9 +222,7 @@
                         },
                         "SOURCE_BUCKETS" : {
                             "Ref" : "SourceBuckets"
-                        },
-                        "REWRITE_MATCH_PATTERN" : "",
-                        "REWRITE_SUBSTITUTION" : ""
+                        }
                     }
                 }
             }
