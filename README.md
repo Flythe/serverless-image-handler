@@ -1,63 +1,93 @@
-**_Important Notice:_**
-Due to a [change in the AWS Lambda execution environment](https://aws.amazon.com/blogs/compute/upcoming-updates-to-the-aws-lambda-execution-environment/), Serverless Image Handler v3 deployments are functionally broken. To address the issue we have released [minor version update v3.1.1](https://solutions-reference.s3.amazonaws.com/serverless-image-handler/v3.1.1/serverless-image-handler.template). We recommend all users of v3 to run cloudformation stack update with v3.1.1. Additionally, we suggest you to look at v4 of the solution and migrate to v4 if it addresses all of your use cases. 
 
 # AWS Serverless Image Handler Lambda wrapper for SharpJS
-A solution to dynamically handle images on the fly, utilizing Sharp (https://sharp.pixelplumbing.com/en/stable/).
-Published version, additional details and documentation are available here: https://aws.amazon.com/solutions/serverless-image-handler/
+A solution to dynamically handle images on the fly, utilising [Sharp](https://sharp.pixelplumbing.com/en/stable/).
+To deploy a version without any customisation there is a ready to use version, additional details and documentation are available [here]( https://aws.amazon.com/solutions/serverless-image-handler/).
 
-_Note:_ it is recommend to build the application binary on Amazon Linux.
+The original repo can be found [here](https://github.com/awslabs/serverless-image-handler). The documentation and readme of the original repos is really minimal so I've attempted a restructure below.
 
-## Running unit tests for customization
-* Clone the repository, then make the desired code changes
-* Next, run unit tests to make sure added customization passes the tests
-```
-cd ./deployment
-chmod +x ./run-unit-tests.sh  \n
-./run-unit-tests.sh \n
-```
+The Amazon CloudFormation template has been heavily modified as well to remove a bunch of unused services that were being installed. At the moment this template will set up: a CloudFront, API Gateway, and a single Lambda function.
 
-## Building distributable for customization
-* Configure the bucket name of your target Amazon S3 distribution bucket
-```
-export TEMPLATE_OUTPUT_BUCKET=my-bucket-name # bucket where cfn template will reside
-export DIST_OUTPUT_BUCKET=my-bucket-name # bucket where customized code will reside
-export VERSION=my-version # version number for the customized code
-```
-_Note:_ You would have to create 2 buckets, one named 'my-bucket-name' and another regional bucket named 'my-bucket-name-<aws_region>'; aws_region is where you are testing the customized solution. Also, the assets  in bucket should be publicly accessible.
+## Prerequisites
+To deploy the script you need two Amazon S3 buckets. One bucket will contain the code distributable and the CloudFormation template. The other will contain the images that will be served.
 
-```
-* Clone the github repo
-```bash
-git clone https://github.com/awslabs/serverless-image-handler.git
-```
+# Installation
+### Automatic deployment
+* Configure the bucket name of your target Amazon S3 distribution bucket. **Note:** This requires two buckets, one named 'my-bucket-name' from which the images will be served and another 'my-deploy-bucket' for the code distributable. Also, the assets in the buckets should be publicly accessible.
 
-* Navigate to the deployment folder
+* Navigate to the deployment folder and build the distributable
 ```bash
 cd serverless-image-handler/deployment
+sudo ./build-s3-dist.sh MY_DEPLOY_BUCKET VERSION
 ```
 
-* Now build the distributable
+* The build script will automatically upload the distributable to the 'my-deploy-bucket'. **Note:** you can also auto-deploy the stack to CloudFormation with this script or auto-update an lambda that has already been deployed, check the comments in ```deployment/build-s3-dist.sh```.
+* If you've chosen to have the script automatically deploy the CloudFormation stack you are done! Wait a couple of minutes for all the components to be prepared and go to the [CloudFormation console](https://console.aws.amazon.com/cloudformation) to fetch your API endpoint under the ```Outputs``` tab.
+
+### Manual deployment - Deploy CloudFormation
+If you choose to do the deployment manually follow these steps:
+* Get the link of the serverless-image-handler.template uploaded to your Amazon S3 bucket (ie. 'my-deploy-bucket').
+```
+https://my-deploy-bucket.s3.amazonaws.com/my-version/serverless-image-handler.template
+```
+* Deploy the Serverless Image Handler solution by launching a new AWS CloudFormation stack. This may take a couple of minutes.
+* Done!
+
+### Manual deployment - Update Lambda function
+If you've already deployed the template and just want to update the Lambda function code do the following:
+* Go to the Lambda Management Console
+* Under ```Function code```, select ```upload a file from Amazon S3``` as ```Code entry type```
+* Enter the link of the image-handler.zip distribution
+```
+https://my-deploy-bucket.s3.amazonaws.com/my-version/image-handler.zip
+```
+* Hit ```Save``` up top and then under ```Actions``` select ```Publish new version```
+* Done!
+
+# Basic usage
+After creating the CloudFormation stack the image handler has an endpoint that accepts base64 encoded JSON objects describing [Sharp](https://sharp.pixelplumbing.com/en/stable/) functions.
+
+* Build the url by defining a JSON object of the required edits
+```javascript
+const request = {
+  "bucket": "my-bucket",
+  "key": "some-img.jpg",
+  "edits": {
+    "resize": {
+      "width": 200,
+      "height": 200
+    }
+  }
+}
+```
+
+* Encode the object in base64
+```javascript
+const jsonString = JSON.stringify(request)
+const request = btoa(jsonString)
+
+console.log(request)
+
+// Result: eyJidWNrZXQiOiJteS1idWNrZXQiLCAia2V5Ijoic29tZS1pbWcuanBnIiwgImVkaXRzIjogeyJyZXNpemUiOiB7IndpZHRoIjogMzAwLCAiaGVpZ2h0IjogMzAwIH19fQ==
+```
+
+* Now use the base64 encoded string to access the image!
+```
+https://my-cloud-front.cloudfront.net/eyJidWNrZXQiOiJteS1idWNrZXQiLCAia2V5Ijoic29tZS1pbWcuanBnIiwgImVkaXRzIjogeyJyZXNpemUiOiB7IndpZHRoIjogMzAwLCAiaGVpZ2h0IjogMzAwIH19fQ==
+```
+
+# Customisation
+* Clone this repo
+* Install the vagrant box, it pre-installs all the necessary libraries
 ```bash
-sudo ./build-s3-dist.sh $DIST_OUTPUT_BUCKET $VERSION
+vagrant up
+vagrant ssh
 ```
 
-* Deploy the distributable to an Amazon S3 bucket in your account. Note: you must have the AWS Command Line Interface installed.
+* Make the desired code changes
+* Run unit tests to make sure added customisation passes the tests
 ```bash
-aws s3 cp ./dist/ s3://$DIST_OUTPUT_BUCKET-[region_name]/serverless-image-handler/$VERSION/ --recursive --exclude "*" --include "*.zip"
-aws s3 cp ./dist/serverless-image-handler.template s3://$TEMPLATE_OUTPUT_BUCKET/serverless-image-handler/$VERSION/
-```
-_Note:_ In the above example, the solution template will expect the source code to be located in the my-bucket-name-[region_name] with prefix serverless-image-handler/my-version/serverless-image-handler.zip
-
-* Get the link of the serverless-image-handler.template uploaded to your Amazon S3 bucket.
-* Deploy the Serverless Image Handler solution to your account by launching a new AWS CloudFormation stack using the link of the serverless-image-handler.template
-```bash
-https://s3.amazonaws.com/my-bucket-name/serverless-image-handler/my-version/serverless-image-handler.template
+cd ./source
+npm test
 ```
 
-Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-
-Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance with the License. A copy of the License is located at
-
-    http://aws.amazon.com/asl/
-
-or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions and limitations under the License.
+* Test your code by deploying the CloudFormation stack, see [installation notes](#installation).
