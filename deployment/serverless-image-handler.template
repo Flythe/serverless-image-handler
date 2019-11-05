@@ -209,7 +209,7 @@
                     "S3Bucket" : { "Fn::FindInMap": [ "SourceCode", "General", "S3Bucket" ]},
                     "S3Key" : { "Fn::Join": [ "/", [ { "Fn::FindInMap": [ "SourceCode", "General", "KeyPrefix" ]}, "image-handler.zip" ]]}
                 },
-                "Runtime": "nodejs8.10",
+                "Runtime": "nodejs10.x",
                 "MemorySize": 1024,
                 "Timeout": 30,
                 "Environment" : {
