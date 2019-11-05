@@ -285,15 +285,6 @@
                             "Resource": [
                                 "arn:aws:s3:::*"
                             ]
-                        },
-                        {
-                            "Effect": "Allow",
-                            "Action": [
-                                "rekognition:DetectFaces"
-                            ],
-                            "Resource": [
-                                "*"
-                            ]
                         } 
                     ]
                 },
@@ -303,12 +294,6 @@
             "Metadata": {
                 "cfn_nag": {
                     "rules_to_suppress": [
-                        {
-                            "id": "F3",
-                            "reason": "The rekognition:DetectFaces action requires the wildcard ('*') resource identifier to function properly. Supporting documentation
-                            available at (https://docs.aws.amazon.com/rekognition/latest/dg/using-identity-based-policies.html) and
-                            (https://docs.aws.amazon.com/rekognition/latest/dg/api-permissions-reference.html)."
-                        },
                         {
                             "id": "W12",
                             "reason": "The ImageHandlerPolicy provides access to all Amazon S3 buckets within the user's account to enable sourcing image files from
