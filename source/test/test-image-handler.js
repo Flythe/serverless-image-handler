@@ -112,7 +112,7 @@ describe('process()', function() {
 // ----------------------------------------------------------------------------
 describe('applyEdits()', function() {
     describe('001/standardEdits', function() {
-        it(`Should pass if a series of standard edits are provided to the 
+        it(`Should pass if a series of standard edits are provided to the
             function`, async function() {
             // Arrange
             const originalImage = Buffer.from('sampleImageContent');
@@ -169,12 +169,12 @@ describe('applyEdits()', function() {
             const rekognition = require('aws-sdk/clients/rekognition');
             const detectFaces = rekognition.prototype.detectFaces = sinon.stub();
             detectFaces.returns({
-                promise: () => { return { 
+                promise: () => { return {
                     FaceDetails: [{
                         BoundingBox: {
-                            Height: 0.18, 
-                            Left: 0.55, 
-                            Top: 0.33, 
+                            Height: 0.18,
+                            Left: 0.55,
+                            Top: 0.33,
                             Width: 0.23
                         }
                     }]
@@ -201,7 +201,7 @@ describe('applyEdits()', function() {
         });
     });
     describe('004/smartCrop/paddingOutOfBoundsError', function() {
-        it(`Should pass if an excessive padding value is passed to the 
+        it(`Should pass if an excessive padding value is passed to the
             smartCrop filter`, async function() {
             // Arrange
             const sinon = require('sinon');
@@ -209,12 +209,12 @@ describe('applyEdits()', function() {
             const rekognition = require('aws-sdk/clients/rekognition');
             const detectFaces = rekognition.prototype.detectFaces = sinon.stub();
             detectFaces.returns({
-                promise: () => { return { 
+                promise: () => { return {
                     FaceDetails: [{
                         BoundingBox: {
-                            Height: 0.18, 
-                            Left: 0.55, 
-                            Top: 0.33, 
+                            Height: 0.18,
+                            Left: 0.55,
+                            Top: 0.33,
                             Width: 0.23
                         }
                     }]
@@ -241,7 +241,7 @@ describe('applyEdits()', function() {
         });
     });
     describe('005/smartCrop/boundingBoxError', function() {
-        it(`Should pass if an excessive faceIndex value is passed to the 
+        it(`Should pass if an excessive faceIndex value is passed to the
             smartCrop filter`, async function() {
             // Arrange
             const sinon = require('sinon');
@@ -249,12 +249,12 @@ describe('applyEdits()', function() {
             const rekognition = require('aws-sdk/clients/rekognition');
             const detectFaces = rekognition.prototype.detectFaces = sinon.stub();
             detectFaces.returns({
-                promise: () => { return { 
+                promise: () => { return {
                     FaceDetails: [{
                         BoundingBox: {
-                            Height: 0.18, 
-                            Left: 0.55, 
-                            Top: 0.33, 
+                            Height: 0.18,
+                            Left: 0.55,
+                            Top: 0.33,
                             Width: 0.23
                         }
                     }]
@@ -281,7 +281,7 @@ describe('applyEdits()', function() {
         });
     });
     describe('006/smartCrop/faceIndexUndefined', function() {
-        it(`Should pass if a faceIndex value of undefined is passed to the 
+        it(`Should pass if a faceIndex value of undefined is passed to the
             smartCrop filter`, async function() {
             // Arrange
             const sinon = require('sinon');
@@ -289,12 +289,12 @@ describe('applyEdits()', function() {
             const rekognition = require('aws-sdk/clients/rekognition');
             const detectFaces = rekognition.prototype.detectFaces = sinon.stub();
             detectFaces.returns({
-                promise: () => { return { 
+                promise: () => { return {
                     FaceDetails: [{
                         BoundingBox: {
-                            Height: 0.18, 
-                            Left: 0.55, 
-                            Top: 0.33, 
+                            Height: 0.18,
+                            Left: 0.55,
+                            Top: 0.33,
                             Width: 0.23
                         }
                     }]
@@ -324,7 +324,7 @@ describe('applyEdits()', function() {
 // ----------------------------------------------------------------------------
 describe('getOverlayImage()', function() {
     describe('001/validParameters', function() {
-        it(`Should pass if the proper bucket name and key are supplied, 
+        it(`Should pass if the proper bucket name and key are supplied,
             simulating an image file that can be retrieved`, async function() {
             // Arrange
             const S3 = require('aws-sdk/clients/s3');
@@ -343,18 +343,18 @@ describe('getOverlayImage()', function() {
         });
     });
     describe('002/imageDoesNotExist', async function() {
-        it(`Should throw an error if an invalid bucket or key name is provided, 
+        it(`Should throw an error if an invalid bucket or key name is provided,
             simulating a non-existant overlay image`, async function() {
             // Arrange
             const S3 = require('aws-sdk/clients/s3');
             const sinon = require('sinon');
             const getObject = S3.prototype.getObject = sinon.stub();
             getObject.withArgs({Bucket: 'invalidBucket', Key: 'invalidKey'}).returns({
-                promise: () => { 
+                promise: () => {
                     return Promise.reject({
                         code: 500,
                         message: 'SimulatedInvalidParameterException'
-                    }) 
+                    })
                 }
             });
             // Act
@@ -374,13 +374,13 @@ describe('getOverlayImage()', function() {
 // ----------------------------------------------------------------------------
 describe('getCropArea()', function() {
     describe('001/validParameters', function() {
-        it(`Should pass if the crop area can be calculated using a series of 
+        it(`Should pass if the crop area can be calculated using a series of
             valid inputs/parameters`, function() {
             // Arrange
             const boundingBox = {
-                Height: 0.18, 
-                Left: 0.55, 
-                Top: 0.33, 
+                Height: 0.18,
+                Left: 0.55,
+                Top: 0.33,
                 Width: 0.23
             };
             const options = { padding: 20 };
@@ -395,7 +395,7 @@ describe('getCropArea()', function() {
             const expectedResult = {
                 left: 90,
                 top: 112,
-                width: 86, 
+                width: 86,
                 height: 112
             }
             assert.deepEqual(result, expectedResult);
@@ -409,21 +409,21 @@ describe('getCropArea()', function() {
 // ----------------------------------------------------------------------------
 describe('getBoundingBox()', function() {
     describe('001/validParameters', function() {
-        it(`Should pass if the proper parameters are passed to the function`, 
+        it(`Should pass if the proper parameters are passed to the function`,
             async function() {
             // Arrange
             const sinon = require('sinon');
             const rekognition = require('aws-sdk/clients/rekognition');
             const detectFaces = rekognition.prototype.detectFaces = sinon.stub();
-            // ---- 
+            // ----
             const imageBytes = Buffer.from('TestImageData');
             detectFaces.withArgs({Image: {Bytes: imageBytes}}).returns({
-                promise: () => { return { 
+                promise: () => { return {
                     FaceDetails: [{
                         BoundingBox: {
-                            Height: 0.18, 
-                            Left: 0.55, 
-                            Top: 0.33, 
+                            Height: 0.18,
+                            Left: 0.55,
+                            Top: 0.33,
                             Width: 0.23
                         }
                     }]
@@ -437,27 +437,27 @@ describe('getBoundingBox()', function() {
             const result = await imageHandler.getBoundingBox(currentImage, faceIndex);
             // Assert
             const expectedResult = {
-                Height: 0.18, 
-                Left: 0.55, 
-                Top: 0.33, 
+                Height: 0.18,
+                Left: 0.55,
+                Top: 0.33,
                 Width: 0.23
             };
             assert.deepEqual(result, expectedResult);
         });
     });
     describe('002/errorHandling', function() {
-        it(`Should simulate an error condition returned by Rekognition`, 
+        it(`Should simulate an error condition returned by Rekognition`,
             async function() {
             // Arrange
             const rekognition = require('aws-sdk/clients/rekognition');
             const sinon = require('sinon');
             const detectFaces = rekognition.prototype.detectFaces = sinon.stub();
             detectFaces.returns({
-                promise: () => { 
+                promise: () => {
                     return Promise.reject({
                         code: 500,
                         message: 'SimulatedError'
-                    }) 
+                    })
                 }
             })
             // ----
