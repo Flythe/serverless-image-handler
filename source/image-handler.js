@@ -52,21 +52,6 @@ class ImageHandler {
             if (key === 'overlayWith') {
                 const overlay = await this.getOverlayImage(value.bucket, value.key);
                 image.overlayWith(overlay, value.options);
-            } else if (key === 'smartCrop') { 
-                const options = value;
-                const imageBuffer = await image.toBuffer();
-                const metadata = await image.metadata();
-                // ----
-                const boundingBox = await this.getBoundingBox(imageBuffer, options.faceIndex);
-                const cropArea = await this.getCropArea(boundingBox, options, metadata);
-                try { image.extract(cropArea) } 
-                catch (err) {
-                    throw ({
-                        status: 400,
-                        code: 'SmartCrop::PaddingOutOfBounds',
-                        message: 'The padding value you provided exceeds the boundaries of the original image. Please try choosing a smaller value or applying padding via Sharp for greater specificity.'
-                    });
-                }
             } else {
                 image[key](value);
             }
@@ -98,63 +83,7 @@ class ImageHandler {
             })
         }
     }
-    
-    /**
-     * Calculates the crop area for a smart-cropped image based on the bounding
-     * box data returned by Amazon Rekognition, as well as padding options and
-     * the image metadata.
-     * @param {Object} boundingBox - The boudning box of the detected face. 
-     * @param {Object} options - Set of options for smart cropping.
-     * @param {Object} metadata - Sharp image metadata.
-     */
-    getCropArea(boundingBox, options, metadata) {
-        const padding = (options.padding !== undefined) ? parseFloat(options.padding) : 0;
-        // Calculate the smart crop area
-        const cropArea = {
-            left : parseInt((boundingBox.Left*metadata.width)-padding),
-            top : parseInt((boundingBox.Top*metadata.height)-padding),
-            width : parseInt((boundingBox.Width*metadata.width)+(padding*2)),
-            height : parseInt((boundingBox.Height*metadata.height)+(padding*2)),
-        }
-        // Return the crop area
-        return cropArea;
-    }
-
-    /**
-     * Gets the bounding box of the specified face index within an image, if specified.
-     * @param {Sharp} imageBuffer - The original image.
-     * @param {Integer} faceIndex - The zero-based face index value, moving from 0 and up as 
-     * confidence decreases for detected faces within the image.
-     */
-    async getBoundingBox(imageBuffer, faceIndex) {
-        const rekognition = new AWS.Rekognition();
-        const params = { Image: { Bytes: imageBuffer }};
-        const faceIdx = (faceIndex !== undefined) ? faceIndex : 0;
-        // Request
-        const request = rekognition.detectFaces(params).promise();
-        // Response handling
-        try {
-            const response = (await request).FaceDetails[faceIdx].BoundingBox;
-            return Promise.resolve(await response);
-        } catch (err) {
-            console.log(err);
-            if (err.message === "Cannot read property 'BoundingBox' of undefined") {
-                return Promise.reject({
-                    status: 400,
-                    code: 'SmartCrop::FaceIndexOutOfRange',
-                    message: 'You have provided a FaceIndex value that exceeds the length of the zero-based detectedFaces array. Please specify a value that is in-range.'
-                })
-            } else {
-                return Promise.reject({
-                    status: 500,
-                    code: err.code,
-                    message: err.message
-                })
-            }
-        }
-    }
 }
 
 // Exports
 module.exports = ImageHandler;
-
