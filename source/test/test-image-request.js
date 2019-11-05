@@ -13,6 +13,7 @@
 
 const ImageRequest = require('../image-request');
 let assert = require('assert');
+let btoa = require('btoa');
 
 // ----------------------------------------------------------------------------
 // [async] setup()
@@ -50,13 +51,50 @@ describe('setup()', function() {
             assert.deepEqual(imageRequest, expectedResult);
         });
     });
-    describe('002/errorCase', function() {
+    describe('002/resizeImageRequest', function() {
+        it(`Should pass when a custom image request is provided and populate
+            the ImageRequest object with the proper values`, async function() {
+            // Arrange
+            const event = {
+                path : '/eyJidWNrZXQiOiJhbGxvd2VkQnVja2V0MDAxIiwia2V5IjoiY3VzdG9tLWltYWdlLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJoZWlnaHQiOjIwMCwid2lkdGgiOjIwMH19fQ=='
+            }
+            process.env = {
+                SOURCE_BUCKETS : "allowedBucket001, allowedBucket002"
+            }
+            // ----
+            const S3 = require('aws-sdk/clients/s3');
+            const sinon = require('sinon');
+            const getObject = S3.prototype.getObject = sinon.stub();
+            getObject.withArgs({Bucket: 'allowedBucket001', Key: 'custom-image.jpg'}).returns({
+                promise: () => { return {
+                  Body: Buffer.from('SampleImageContent\n')
+                }}
+            })
+            // Act
+            const imageRequest = new ImageRequest();
+            await imageRequest.setup(event);
+            const expectedResult = {
+                bucket: 'allowedBucket001',
+                key: 'custom-image.jpg',
+                edits: {
+                    resize: {
+                        height: 200,
+                        width: 200
+                    }
+                },
+                originalImage: Buffer.from('SampleImageContent\n')
+            }
+            // Assert
+            assert.deepEqual(imageRequest, expectedResult);
+        });
+    });
+    describe('003/errorCase', function() {
         it(`Should pass when an error is caught`, async function() {
             // Assert
             const event = {
                 path : 'invalidPathHere'
             }
-            
+
             // Act
             const imageRequest = new ImageRequest();
             // Assert
@@ -367,4 +405,442 @@ describe('getAllowedSourceBuckets()', function() {
             });
         });
     });
-})
+});
+
+// ----------------------------------------------------------------------------
+// isAllowedResize()
+// ----------------------------------------------------------------------------
+describe('isAllowedResize()', function() {
+    describe('001/allowedResizeRequest', function() {
+        it(`Should pass when a resize image request is provided and populate
+            the ImageRequest object with the proper values`, async function() {
+            const request = {"bucket": 'validBucket', "key": 'validKey', "edits": {"resize": {"width": 300, "height": 300}}}
+            const strRequest = JSON.stringify(request)
+            const event = {
+                path: btoa(strRequest)
+            }
+
+            process.env = {
+                SOURCE_BUCKETS : "validBucket, validBucket2",
+                ALLOWED_SIZES : '300x300'
+            }
+            // ----
+            const S3 = require('aws-sdk/clients/s3');
+            const sinon = require('sinon');
+            const getObject = S3.prototype.getObject = sinon.stub();
+            getObject.withArgs({Bucket: 'validBucket', Key: 'validKey'}).returns({
+                promise: () => { return {
+                  Body: Buffer.from('SampleImageContent\n')
+                }}
+            })
+            // Act
+            const imageRequest = new ImageRequest();
+            await imageRequest.setup(event);
+            const expectedResult = {
+                bucket: 'validBucket',
+                key: 'validKey',
+                edits: { resize: { width: 300, height: 300 } },
+                originalImage: Buffer.from('SampleImageContent\n')
+            }
+            // Assert
+            assert.deepEqual(imageRequest, expectedResult);
+        });
+    });
+    describe('002/disallowedResizeRequest', function() {
+        it(`Should throw an error when a resize image request is provided with
+            disallowed sizes`, async function() {
+            const request = {"bucket": 'validBucket', "key": 'validKey', "edits": {"resize": {"width": 300, "height": 300}}}
+            const strRequest = JSON.stringify(request)
+            const event = {
+                path: btoa(strRequest)
+            }
+
+            process.env = {
+                SOURCE_BUCKETS : "validBucket, validBucket2",
+                ALLOWED_SIZES : '400x400'
+            }
+            // ----
+            const S3 = require('aws-sdk/clients/s3');
+            const sinon = require('sinon');
+            const getObject = S3.prototype.getObject = sinon.stub();
+            getObject.withArgs({Bucket: 'validBucket', Key: 'validKey'}).returns({
+                promise: () => { return {
+                  Body: Buffer.from('SampleImageContent\n')
+                }}
+            })
+            // Act
+            const imageRequest = new ImageRequest();
+
+            await imageRequest.setup(event).then(() => {
+                console.log(data);
+            }).catch((err) => {
+                console.log(err);
+                assert.deepEqual(err.code, 'Resize::SizeNotAllowed');
+            })
+        });
+    });
+    describe('003/unassignedAllowedSizes', function() {
+        it(`Should pass when any resize image request is provided and populate
+            the ImageRequest object with the proper values`, async function() {
+            const request = {"bucket": 'validBucket', "key": 'validKey', "edits": {"resize": {"width": 300, "height": 300}}}
+            const strRequest = JSON.stringify(request)
+            const event = {
+                path: btoa(strRequest)
+            }
+
+            process.env = {
+                SOURCE_BUCKETS : "validBucket, validBucket2"
+            }
+            // ----
+            const S3 = require('aws-sdk/clients/s3');
+            const sinon = require('sinon');
+            const getObject = S3.prototype.getObject = sinon.stub();
+            getObject.withArgs({Bucket: 'validBucket', Key: 'validKey'}).returns({
+                promise: () => { return {
+                  Body: Buffer.from('SampleImageContent\n')
+                }}
+            })
+            // Act
+            const imageRequest = new ImageRequest();
+            await imageRequest.setup(event);
+            const expectedResult = {
+                bucket: 'validBucket',
+                key: 'validKey',
+                edits: { resize: { width: 300, height: 300 } },
+                originalImage: Buffer.from('SampleImageContent\n')
+            }
+            // Assert
+            assert.deepEqual(imageRequest, expectedResult);
+        });
+    });
+});
+
+// ----------------------------------------------------------------------------
+// checkResize()
+// ----------------------------------------------------------------------------
+describe('checkResize()', function() {
+    describe('001/noRestrictions', function() {
+        it(``, function() {
+            // Arrange
+            const edits = {
+                resize: {
+                    width: 1400,
+                    height: 1400
+                }
+            }
+
+            process.env = {
+                DEFAULT_TO_FIRST_SIZE : 'No',
+                ALLOWED_SIZES : ''
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.checkResize(edits);
+
+            // Assert
+            const expectedResult = {
+                resize: {
+                    width: 1400,
+                    height: 1400
+                }
+            };
+
+            assert.deepEqual(result, expectedResult);
+        });
+    });
+    describe('002/validResize', function() {
+        it(``, function() {
+            // Arrange
+            const edits = {
+                resize: {
+                    width: 1400,
+                    height: 1400
+                }
+            }
+
+            process.env = {
+                DEFAULT_TO_FIRST_SIZE : 'No',
+                ALLOWED_SIZES : '100x100,200x200,1400x1400'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.checkResize(edits);
+
+            // Assert
+            const expectedResult = {
+                resize: {
+                    width: 1400,
+                    height: 1400
+                }
+            };
+
+            assert.deepEqual(result, expectedResult);
+        });
+    });
+    describe('003/invalidResize', function() {
+        it(``, function() {
+            // Arrange
+            const edits = {
+                resize: {
+                    width: 2000,
+                    height: 2000
+                }
+            }
+
+            process.env = {
+                DEFAULT_TO_FIRST_SIZE : 'No',
+                ALLOWED_SIZES : '100x100,200x200,1400x1400'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+
+            // Assert
+            assert.throws(function() {
+                imageRequest.checkResize(edits);
+            }, Object, {
+                status: 400,
+                code: 'Resize::SizeNotAllowed',
+                message: 'The size you specified is not allowed. Please check the sizes specified in ALLOWED_SIZES.'
+            });
+        });
+    });
+    describe('004/setToDefault', function() {
+        it(``, function() {
+            // Arrange
+            const edits = {}
+
+            process.env = {
+                DEFAULT_TO_FIRST_SIZE : 'Yes',
+                ALLOWED_SIZES : '100x100,200x200,1400x1400'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.checkResize(edits);
+
+            // Assert
+            const expectedResult = {
+                resize: {
+                    width: 100,
+                    height: 100
+                }
+            };
+
+            assert.deepEqual(result, expectedResult);
+        });
+    });
+    describe('005/noDefaultSet', function() {
+        it(``, function() {
+            // Arrange
+            const edits = {
+                resize: {
+                    width: 2000,
+                    height: 2000
+                }
+            }
+
+            process.env = {
+                DEFAULT_TO_FIRST_SIZE : 'No',
+                ALLOWED_SIZES : '100x100,200x200,1400x1400'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+           
+            // Assert
+            assert.throws(function() {
+                imageRequest.checkResize(edits);
+            }, Object, {
+                status: 400,
+                code: 'Resize::NoDefault',
+                message: 'No resize was specified and no default size is defined.'
+            });
+        });
+    });
+});
+
+// ----------------------------------------------------------------------------
+// sizesRestricted()
+// ----------------------------------------------------------------------------
+describe('sizesRestricted()', function() {
+    describe('001/getRestriction', function() {
+        it(``, function() {
+            process.env = {
+                ALLOWED_SIZES : '100x100'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.sizesRestricted();
+
+            // Assert
+            const expectedResult = true;
+
+            assert.deepEqual(result, expectedResult);
+        });
+    });
+});
+
+// ----------------------------------------------------------------------------
+// resizeInRequest()
+// ----------------------------------------------------------------------------
+describe('resizeInRequest()', function() {
+    describe('001/hasResizeInRequest', function() {
+        it(``, function() {
+            const request = {
+                resize: {
+                    width: 100,
+                    height: 100
+                }
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.resizeInRequest(request);
+
+            // Assert
+            const expectedResult = true;
+
+            assert.deepEqual(result, expectedResult);
+        });
+    });
+    describe('002/noResizeInRequest', function() {
+        it(``, function() {
+            const request = {}
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.resizeInRequest(request);
+
+            // Assert
+            const expectedResult = false;
+
+            assert.equal(result, expectedResult);
+        });
+    });
+    describe('003/emptyResizeInRequest', function() {
+        it(``, function() {
+            const request = {
+                resize: {}
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.resizeInRequest(request);
+
+            // Assert
+            const expectedResult = false;
+
+            assert.equal(result, expectedResult);
+        });
+    });
+});
+
+// ----------------------------------------------------------------------------
+// isAllowedResize()
+// ----------------------------------------------------------------------------
+describe('isAllowedResize()', function() {
+    describe('001/validResizeRequest', function() {
+        it(``, function() {
+            const request = {
+                resize: {
+                    width: 100,
+                    height: 100
+                }
+            }
+
+            process.env = {
+                ALLOWED_SIZES : '100x100'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.isAllowedResize(request);
+
+            // Assert
+            const expectedResult = request;
+
+            assert.equal(result, expectedResult);
+        });
+    });
+    describe('002/invalidResizeRequest', function() {
+        it(``, function() {
+            const request = {
+                resize: {
+                    width: 200,
+                    height: 200
+                }
+            }
+
+            process.env = {
+                ALLOWED_SIZES : '100x100'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+
+            // Assert
+            assert.throws(function() {
+                imageRequest.isAllowedResize(request);
+            }, Object, {
+                status: 400,
+                code: 'Resize::SizeNotAllowed',
+                message: 'The size you specified is not allowed. Please check the sizes specified in ALLOWED_SIZES.'
+            });
+        });
+    });
+});
+
+// ----------------------------------------------------------------------------
+// addSizeToRequest()
+// ----------------------------------------------------------------------------
+describe('addSizeToRequest()', function() {
+    describe('001/defaultSizeDefined', function() {
+        it(``, function() {
+            const request = {}
+
+            process.env = {
+                DEFAULT_TO_FIRST_SIZE: 'Yes',
+                ALLOWED_SIZES : '100x100'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.addSizeToRequest(request);
+
+            // Assert
+            const expectedResult = {
+                resize: {
+                    width: 100,
+                    height: 100
+                }
+            };
+
+            assert.deepEqual(result, expectedResult);
+        });
+    });
+    describe('002/noDefaultSizeDefined', function() {
+        it(``, function() {
+            const request = {}
+
+            process.env = {
+                ALLOWED_SIZES : '100x100'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+
+            // Assert
+            assert.throws(function() {
+                imageRequest.addSizeToRequest(request);
+            }, Object, {
+                status: 400,
+                code: 'Resize::NoDefault',
+                message: 'No resize was specified and no default size is defined.'
+            });
+        });
+    });
+});

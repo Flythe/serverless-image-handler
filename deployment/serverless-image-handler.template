@@ -2,6 +2,17 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "(SO0023) - Serverless Image Handler: This template deploys and configures a serverless architecture that is optimized for dynamic image manipulation and delivery at low latency and cost. Leverages SharpJS for image processing. Template version 4.",
     "Parameters": {
+        "AllowedSizes": {
+            "Description" : "Which sizes do you want to allow for the resizing functions, seperate with comma's",
+            "Default" : "100x100,200x200,642x0,800x800,1600x0",
+            "Type" : "String"
+        },
+        "DefaultToFirstSize": {
+            "Description" : "If the allowed sizes is not empty and no resize command is added to the request should we return the first size defined in allowed sizes.",
+            "Default" : "Yes",
+            "Type" : "String",
+            "AllowedValues" : [ "Yes", "No" ]
+        },
         "CorsEnabled" : {
             "Description" : "Would you like to enable Cross-Origin Resource Sharing (CORS) for the image handler API? Select 'Yes' if so.",
             "Default" : "No",
@@ -222,6 +233,12 @@
                         },
                         "SOURCE_BUCKETS" : {
                             "Ref" : "SourceBuckets"
+                        },
+                        "ALLOWED_SIZES": {
+                            "Ref" : "AllowedSizes"
+                        },
+                        "DEFAULT_TO_FIRST_SIZE": {
+                            "Ref" : "DefaultToFirstSize"
                         }
                     }
                 }
@@ -348,7 +365,15 @@
         },
         "SourceBuckets" : {
             "Description" : "Amazon S3 bucket location containing original image files.",
-            "Value" : { "Ref" : "SourceBuckets"}
+            "Value" : { "Ref" : "SourceBuckets" }
+        },
+        "AllowedSizes" : {
+            "Description" : "Sizes in pixels that are allowed to be requested through the API.",
+            "Value" : { "Ref": "AllowedSizes" }
+        },
+        "DefaultToFirstSize" : {
+            "Description" : "Return the first size in the allowed sizes array when no resize command is specified in the request.",
+            "Value" : { "Ref": "DefaultToFirstSize" }
         },
         "CorsEnabled" : { 
             "Description" : "Indicates whether Cross-Origin Resource Sharing (CORS) has been enabled for the image handler API.",

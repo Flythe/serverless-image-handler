@@ -12,7 +12,7 @@
  *********************************************************************************************************************/
 
 class ImageRequest {
-    
+
     /**
      * Initializer function for creating a new image request, used by the image
      * handler to perform image modifications.
@@ -25,7 +25,9 @@ class ImageRequest {
             this.bucket = this.parseImageBucket(event);
             this.key = this.getImageKey(event);
             this.edits = this.getImageEdits(event);
+            this.edits = this.checkResize(this.edits);
             this.originalImage = await this.getOriginalImage(this.bucket, this.key)
+
             return Promise.resolve(this);
         } catch (err) {
             return Promise.reject(err);
@@ -54,6 +56,102 @@ class ImageRequest {
                 message: err.message
             })
         }
+    }
+
+    /**
+     * If resizing is restricted this function checks whether
+     * the request asks for a valid resize. When an image is
+     * requested without a resize specified and the DEFAULT_TO_FIRST_SIZE
+     * setting is set to 'Yes' it will add the default size to
+     * the request.
+     * @param {Object} edits - JSON object defining the edits that should be applied to the image.
+     */
+    checkResize(edits) {
+        if (!this.sizesRestricted()) {
+            return edits;    
+        } else if (this.resizeInRequest(edits)) {
+            return this.isAllowedResize(edits);
+        } else {
+            return this.addSizeToRequest(edits);
+        }
+    }
+
+    /**
+     * Checks whether the external variable ALLOWED_SIZES is set.
+     * This means that resizing the image is bound to a set of
+     * allowed sizes.
+     */
+    sizesRestricted() {
+        return this.externalVariableIsSet('ALLOWED_SIZES');
+    }
+
+    /**
+     * Checks whether a size is defined in the request.
+     * @param {Object} edits - JSON object defining the edits that should be applied to the image.
+     */
+    resizeInRequest(edits) {
+        return (edits.resize !== undefined &&
+            edits.resize !== ""
+            && (Object.keys(edits.resize).length !== 0 && edits.resize.constructor === Object));
+    }
+
+    /**
+     * Checks whether the requested image size is allowed by the
+     * ALLOWED_SIZES config.
+     * @param {Object} edits - JSON object defining the edits that should be applied to the image.
+     */
+    isAllowedResize(edits) {
+        const allowedSizes = process.env.ALLOWED_SIZES.split(',');
+        const requestedSize = edits.resize.width + 'x' + edits.resize.height;
+
+        if (allowedSizes.includes(requestedSize)) {
+            return edits;
+        } else {
+            throw ({
+                status: 400,
+                code: 'Resize::SizeNotAllowed',
+                message: 'The size you specified is not allowed. Please check the sizes specified in ALLOWED_SIZES.'
+            })
+        }
+    }
+
+    /**
+     * When an image is requested without a resize specified and
+     * the DEFAULT_TO_FIRST_SIZE setting is set to 'Yes' this will
+     * add the default size to the request.
+     */
+    addSizeToRequest(edits) {
+        const defaultToFirstSize = (process.env.DEFAULT_TO_FIRST_SIZE === "Yes");
+        let firstSize = process.env.ALLOWED_SIZES.split(',')[0];
+
+        if (defaultToFirstSize) {
+            let [defaultWidth, defaultHeight] = firstSize.split('x');
+            
+            edits.resize = {
+                width: defaultWidth,
+                height: defaultHeight
+            }
+
+            return edits;
+        } else {
+            throw ({
+                status: 400,
+                code: 'Resize::NoDefault',
+                message: 'No resize was specified and no default size is defined.'
+            })
+        }
+    }
+
+    /**
+     * Checks whether an externally set variable exists and is not empty.
+     * @param {String} key - Key to the variable.
+     */
+    externalVariableIsSet(key) {
+        if (process.env[key] !== "" && process.env[key] !== undefined) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
