@@ -618,7 +618,65 @@ describe('checkResize()', function() {
             });
         });
     });
-    describe('004/setToDefault', function() {
+    describe('004/heightIsZero', function() {
+        it(``, function() {
+            // Arrange
+            const edits = {
+                resize: {
+                    width: 100,
+                    height: 0
+                }
+            }
+
+            process.env = {
+                DEFAULT_TO_FIRST_SIZE : 'No',
+                ALLOWED_SIZES : '100x0,200x200,1400x1400'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.checkResize(edits);
+
+            // Assert
+            const expectedResult = {
+                resize: {
+                    width: 100
+                }
+            };
+
+            assert.deepEqual(result, expectedResult);
+        });
+    });
+    describe('005/widthIsZero', function() {
+        it(``, function() {
+            // Arrange
+            const edits = {
+                resize: {
+                    width: 0,
+                    height: 100
+                }
+            }
+
+            process.env = {
+                DEFAULT_TO_FIRST_SIZE : 'No',
+                ALLOWED_SIZES : '0x100,200x200,1400x1400'
+            }
+
+            // Act
+            const imageRequest = new ImageRequest();
+            const result = imageRequest.checkResize(edits);
+
+            // Assert
+            const expectedResult = {
+                resize: {
+                    height: 100
+                }
+            };
+
+            assert.deepEqual(result, expectedResult);
+        });
+    });
+    describe('006/setToDefault', function() {
         it(``, function() {
             // Arrange
             const edits = {}
@@ -643,7 +701,7 @@ describe('checkResize()', function() {
             assert.deepEqual(result, expectedResult);
         });
     });
-    describe('005/noDefaultSet', function() {
+    describe('007/noDefaultSet', function() {
         it(``, function() {
             // Arrange
             const edits = {

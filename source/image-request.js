@@ -102,10 +102,18 @@ class ImageRequest {
         if (!this.sizesRestricted()) {
             return edits;    
         } else if (this.resizeInRequest(edits)) {
-            return this.isAllowedResize(edits);
+            edits = this.isAllowedResize(edits);
         } else {
-            return this.addSizeToRequest(edits);
+            edits = this.addSizeToRequest(edits);
         }
+        
+        if (edits.resize.width === 0) {
+            delete edits.resize.width;
+        } else if (edits.resize.height === 0) {
+            delete edits.resize.height;
+        }
+
+        return edits;
     }
 
     /**
@@ -160,8 +168,8 @@ class ImageRequest {
             let [defaultWidth, defaultHeight] = firstSize.split('x');
             
             edits.resize = {
-                width: defaultWidth,
-                height: defaultHeight
+                width: Number(defaultWidth),
+                height: Number(defaultHeight)
             }
 
             return edits;
