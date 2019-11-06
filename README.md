@@ -83,6 +83,11 @@ vagrant up
 vagrant ssh
 ```
 
+* Configure the AWS CLI
+```bash
+aws configure
+```
+
 * Make the desired code changes
 * Run unit tests to make sure added customisation passes the tests
 ```bash
