@@ -100,7 +100,7 @@
                         "TargetOriginId": { "Fn::Sub": "${ImageHandlerApi}" },
                         "ForwardedValues": {
                             "QueryString": false,
-                            "Headers": [ "Origin" ],
+                            "Headers": [ "Origin", "Accept" ],
                             "Cookies": { "Forward": "none" }
                         },
                         "ViewerProtocolPolicy": "https-only"
