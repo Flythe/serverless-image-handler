@@ -249,7 +249,7 @@ describe('parseImageBucket()', function() {
             // Assert
             assert.throws(function() {
                 imageRequest.parseImageBucket(event, 'Default');
-            }, Object, {
+            }, {
                 status: 403,
                 code: 'ImageBucket::CannotAccessBucket',
                 message: 'The bucket you specified could not be accessed. Please check that the bucket is specified in your SOURCE_BUCKETS.'
@@ -301,18 +301,18 @@ describe('isValidRequest()', function() {
             type based on the three groups given`, function() {
             // Arrange
             const event = {
-                path : '12x12e24d234r2ewxsad123d34r'
+                path : 'thisIsNotAValidPath'
             }
             process.env = {};
             // Act
             const imageRequest = new ImageRequest();
             // Assert
             assert.throws(function() {
-                const a = imageRequest.isValidRequest(event);
-            }, Object, {
+                imageRequest.isValidRequest(event);
+            }, {
                 status: 400,
-                code: 'RequestType::CannotDetermineRequestType',
-                message: 'The type of request you are making could not be properly routed. Please check your request syntax and refer to the documentation for additional guidance.'
+                code: 'RequestTypeError',
+                message: 'The type of request you are making could not be processed. Please ensure that your original image is of a supported file type (jpg, png, tiff, webp) and that your image request is provided in the correct syntax. Refer to the documentation for additional guidance on forming image requests.'
             });
         });
     });
@@ -352,7 +352,7 @@ describe('decodeRequest()', function() {
             // Assert
             assert.throws(function() {
                 imageRequest.decodeRequest(event);
-            }, Object, {
+            }, {
                 status: 400,
                 code: 'DecodeRequest::CannotDecodeRequest',
                 message: 'The image request you provided could not be decoded. Please check that your request is base64 encoded properly and refer to the documentation for additional guidance.'
@@ -369,7 +369,7 @@ describe('decodeRequest()', function() {
             // Assert
             assert.throws(function() {
                 imageRequest.decodeRequest(event);
-            }, Object, {
+            }, {
                 status: 400,
                 code: 'DecodeRequest::CannotReadPath',
                 message: 'The URL path you provided could not be read. Please ensure that it is properly formed according to the solution documentation.'
@@ -407,7 +407,7 @@ describe('getAllowedSourceBuckets()', function() {
             // Assert
             assert.throws(function() {
                 imageRequest.getAllowedSourceBuckets();
-            }, Object, {
+            }, {
                 status: 400,
                 code: 'GetAllowedSourceBuckets::NoSourceBuckets',
                 message: 'The SOURCE_BUCKETS variable could not be read. Please check that it is not empty and contains at least one source bucket, or multiple buckets separated by commas. Spaces can be provided between commas and bucket names, these will be automatically parsed out when decoding.'
@@ -611,7 +611,7 @@ describe('checkResize()', function() {
             // Assert
             assert.throws(function() {
                 imageRequest.checkResize(edits);
-            }, Object, {
+            }, {
                 status: 400,
                 code: 'Resize::SizeNotAllowed',
                 message: 'The size you specified is not allowed. Please check the sizes specified in ALLOWED_SIZES.'
@@ -722,7 +722,7 @@ describe('checkResize()', function() {
             // Assert
             assert.throws(function() {
                 imageRequest.checkResize(edits);
-            }, Object, {
+            }, {
                 status: 400,
                 code: 'Resize::NoDefault',
                 message: 'No resize was specified and no default size is defined.'
@@ -854,7 +854,7 @@ describe('isAllowedResize()', function() {
             // Assert
             assert.throws(function() {
                 imageRequest.isAllowedResize(request);
-            }, Object, {
+            }, {
                 status: 400,
                 code: 'Resize::SizeNotAllowed',
                 message: 'The size you specified is not allowed. Please check the sizes specified in ALLOWED_SIZES.'
@@ -905,7 +905,7 @@ describe('addSizeToRequest()', function() {
             // Assert
             assert.throws(function() {
                 imageRequest.addSizeToRequest(request);
-            }, Object, {
+            }, {
                 status: 400,
                 code: 'Resize::NoDefault',
                 message: 'No resize was specified and no default size is defined.'
