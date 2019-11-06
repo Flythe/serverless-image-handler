@@ -872,9 +872,9 @@ describe('addSizeToRequest()', function() {
 });
 
 // ----------------------------------------------------------------------------
-// addWebP()
+// getOutputFormat()
 // ----------------------------------------------------------------------------
-describe('addWebP()', function () {
+describe('getOutputFormat()', function () {
     describe('001/AcceptsHeaderIncludesWebP', function () {
         it(`Should pass if it returns "webp" for an accepts header which includes webp`, function () {
             // Arrange
@@ -882,13 +882,14 @@ describe('addWebP()', function () {
                 AUTO_WEBP: true
             };
             const event = {
+                path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
                 headers: {
                     Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
                 }
             };
             // Act
             const imageRequest = new ImageRequest();
-            var result = imageRequest.addWebP(event);
+            var result = imageRequest.getOutputFormat(event);
             // Assert
             assert.deepEqual(result, "webp");
         });
@@ -900,13 +901,14 @@ describe('addWebP()', function () {
                 AUTO_WEBP: true
             };
             const event = {
+                path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
                 headers: {
                     Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
                 }
             };
             // Act
             const imageRequest = new ImageRequest();
-            var result = imageRequest.addWebP(event);
+            var result = imageRequest.getOutputFormat(event);
             // Assert
             assert.deepEqual(result, null);
         });
@@ -918,13 +920,14 @@ describe('addWebP()', function () {
                 AUTO_WEBP: false
             };
             const event = {
+                path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
                 headers: {
                     Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
                 }
             };
             // Act
             const imageRequest = new ImageRequest();
-            var result = imageRequest.addWebP(event);
+            var result = imageRequest.getOutputFormat(event);
             // Assert
             assert.deepEqual(result, null);
         });
@@ -933,15 +936,53 @@ describe('addWebP()', function () {
         it(`Should pass if it returns null when AUTO_WEBP is not set with accepts header including webp`, function () {
             // Arrange
             const event = {
+                path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
                 headers: {
                     Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
                 }
             };
             // Act
             const imageRequest = new ImageRequest();
-            var result = imageRequest.addWebP(event);
+            var result = imageRequest.getOutputFormat(event);
             // Assert
             assert.deepEqual(result, null);
+        });
+    });
+    describe('005/SetOutputFormat', function () {
+        it(`Should pass if it returns the requested output format`, function () {
+            // Arrange
+            const event = {
+                path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                },
+                outputFormat: 'png'
+            };
+            // Act
+            const imageRequest = new ImageRequest();
+            var result = imageRequest.getOutputFormat(event);
+            // Assert
+            assert.deepEqual(result, 'png');
+        });
+    });
+    describe('006/OverruleAutoWebP', function () {
+        it(`Should pass if it returns the requested output format instead of webp`, function () {
+            // Arrange
+            process.env = {
+                AUTO_WEBP: false
+            };
+            const event = {
+                path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                },
+                outputFormat: 'png'
+            };
+            // Act
+            const imageRequest = new ImageRequest();
+            var result = imageRequest.getOutputFormat(event);
+            // Assert
+            assert.deepEqual(result, 'png');
         });
     });
 });
