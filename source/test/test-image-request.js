@@ -35,13 +35,19 @@ describe('setup()', function() {
             const getObject = S3.prototype.getObject = sinon.stub();
             getObject.withArgs({Bucket: 'validBucket', Key: 'validKey'}).returns({
                 promise: () => { return {
-                  Body: Buffer.from('SampleImageContent\n')
+                  Body: Buffer.from('SampleImageContent\n'),
+                  ContentType: 'image',
+                  Expires: 'never',
+                  LastModified: 'now'
                 }}
             })
             // Act
             const imageRequest = new ImageRequest();
             await imageRequest.setup(event);
             const expectedResult = {
+                ContentType: 'image',
+                Expires: 'never',
+                LastModified: 'now',
                 bucket: 'validBucket',
                 key: 'validKey',
                 edits: { grayscale: true },
@@ -67,13 +73,19 @@ describe('setup()', function() {
             const getObject = S3.prototype.getObject = sinon.stub();
             getObject.withArgs({Bucket: 'allowedBucket001', Key: 'custom-image.jpg'}).returns({
                 promise: () => { return {
-                  Body: Buffer.from('SampleImageContent\n')
+                  Body: Buffer.from('SampleImageContent\n'),
+                  ContentType: 'image',
+                  Expires: 'never',
+                  LastModified: 'now'
                 }}
             })
             // Act
             const imageRequest = new ImageRequest();
             await imageRequest.setup(event);
             const expectedResult = {
+                ContentType: 'image',
+                Expires: 'never',
+                LastModified: 'now',
                 bucket: 'allowedBucket001',
                 key: 'custom-image.jpg',
                 edits: {
@@ -108,13 +120,19 @@ describe('setup()', function() {
             const getObject = S3.prototype.getObject = sinon.stub();
             getObject.withArgs({Bucket: 'allowedBucket001', Key: 'custom-image.jpg'}).returns({
                 promise: () => { return {
-                  Body: Buffer.from('SampleImageContent\n')
+                  Body: Buffer.from('SampleImageContent\n'),
+                  ContentType: 'image',
+                  Expires: 'never',
+                  LastModified: 'now'
                 }}
             })
             // Act
             const imageRequest = new ImageRequest();
             await imageRequest.setup(event);
             const expectedResult = {
+                ContentType: 'image',
+                Expires: 'never',
+                LastModified: 'now',
                 bucket: 'allowedBucket001',
                 key: 'custom-image.jpg',
                 outputFormat: 'webp',
@@ -472,13 +490,19 @@ describe('isAllowedResize()', function() {
             const getObject = S3.prototype.getObject = sinon.stub();
             getObject.withArgs({Bucket: 'validBucket', Key: 'validKey'}).returns({
                 promise: () => { return {
-                  Body: Buffer.from('SampleImageContent\n')
+                  Body: Buffer.from('SampleImageContent\n'),
+                  ContentType: 'image',
+                  Expires: 'never',
+                  LastModified: 'now'
                 }}
             })
             // Act
             const imageRequest = new ImageRequest();
             await imageRequest.setup(event);
             const expectedResult = {
+                ContentType: 'image',
+                Expires: 'never',
+                LastModified: 'now',
                 bucket: 'validBucket',
                 key: 'validKey',
                 edits: { resize: { width: 300, height: 300 } },
@@ -539,13 +563,19 @@ describe('isAllowedResize()', function() {
             const getObject = S3.prototype.getObject = sinon.stub();
             getObject.withArgs({Bucket: 'validBucket', Key: 'validKey'}).returns({
                 promise: () => { return {
-                  Body: Buffer.from('SampleImageContent\n')
+                  Body: Buffer.from('SampleImageContent\n'),
+                  ContentType: 'image',
+                  Expires: 'never',
+                  LastModified: 'now'
                 }}
             })
             // Act
             const imageRequest = new ImageRequest();
             await imageRequest.setup(event);
             const expectedResult = {
+                ContentType: 'image',
+                Expires: 'never',
+                LastModified: 'now',
                 bucket: 'validBucket',
                 key: 'validKey',
                 edits: { resize: { width: 300, height: 300 } },
