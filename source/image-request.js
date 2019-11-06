@@ -53,9 +53,10 @@ class ImageRequest {
         const request = s3.getObject(imageLocation).promise();
         try {
             const originalImage = await request;
+            const formattedLastModified = new Date(originalImage.LastModified).toUTCString();
             this.ContentType = originalImage.ContentType;
             this.Expires = originalImage.Expires;
-            this.LastModified = originalImage.LastModified;
+            this.LastModified = formattedLastModified;
             this.CacheControl = originalImage.CacheControl;
             return Promise.resolve(originalImage.Body);
         }

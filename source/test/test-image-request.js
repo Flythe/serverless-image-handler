@@ -16,10 +16,17 @@ let assert = require('assert');
 let btoa = require('btoa');
 
 const defaultHeaders = {
-    ContentType: 'image',
+    ContentType: 'image/jpg',
     Expires: 'never',
-    CacheControl: 'controlled',
-    LastModified: 'now'
+    CacheControl: 'max-age=86400',
+    LastModified: '2019-11-06T21:36:00.000z'
+}
+
+const defaultResponseHeaders = {
+    ContentType: 'image/jpg',
+    Expires: 'never',
+    CacheControl: 'max-age=86400',
+    LastModified: 'Wed, 06 Nov 2019 21:36:00 GMT'
 }
 
 // ----------------------------------------------------------------------------
@@ -49,7 +56,7 @@ describe('setup()', function() {
             const imageRequest = new ImageRequest();
             await imageRequest.setup(event);
             const expectedResult = {
-                ...defaultHeaders,
+                ...defaultResponseHeaders,
                 bucket: 'validBucket',
                 key: 'validKey',
                 edits: { grayscale: true },
@@ -82,7 +89,7 @@ describe('setup()', function() {
             const imageRequest = new ImageRequest();
             await imageRequest.setup(event);
             const expectedResult = {
-                ...defaultHeaders,
+                ...defaultResponseHeaders,
                 bucket: 'allowedBucket001',
                 key: 'custom-image.jpg',
                 edits: {
@@ -126,8 +133,8 @@ describe('setup()', function() {
             const expectedResult = {
                 ContentType: 'image/webp',
                 Expires: 'never',
-                CacheControl: 'controlled',
-                LastModified: 'now',
+                CacheControl: 'max-age=86400',
+                LastModified: 'Wed, 06 Nov 2019 21:36:00 GMT',
                 bucket: 'allowedBucket001',
                 key: 'custom-image.jpg',
                 outputFormat: 'webp',
@@ -464,7 +471,7 @@ describe('isAllowedResize()', function() {
             const imageRequest = new ImageRequest();
             await imageRequest.setup(event);
             const expectedResult = {
-                ...defaultHeaders,
+                ...defaultResponseHeaders,
                 bucket: 'validBucket',
                 key: 'validKey',
                 edits: { resize: { width: 300, height: 300 } },
@@ -532,7 +539,7 @@ describe('isAllowedResize()', function() {
             const imageRequest = new ImageRequest();
             await imageRequest.setup(event);
             const expectedResult = {
-                ...defaultHeaders,
+                ...defaultResponseHeaders,
                 bucket: 'validBucket',
                 key: 'validKey',
                 edits: { resize: { width: 300, height: 300 } },
