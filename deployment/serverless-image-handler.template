@@ -4,7 +4,7 @@
     "Parameters": {
         "AllowedSizes": {
             "Description" : "Which sizes do you want to allow for the resizing functions, seperate with comma's",
-            "Default" : "100x100,200x200,642x0,800x800,1600x0",
+            "Default" : "642x0,100x100,200x200,800x800,1600x0",
             "Type" : "String"
         },
         "DefaultToFirstSize": {
