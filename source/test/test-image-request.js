@@ -704,12 +704,7 @@ describe('checkResize()', function() {
     describe('007/noDefaultSet', function() {
         it(``, function() {
             // Arrange
-            const edits = {
-                resize: {
-                    width: 2000,
-                    height: 2000
-                }
-            }
+            const edits = {}
 
             process.env = {
                 DEFAULT_TO_FIRST_SIZE : 'No',
