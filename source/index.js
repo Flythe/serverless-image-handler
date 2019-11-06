@@ -20,7 +20,6 @@ exports.handler = async (event) => {
     const imageHandler = new ImageHandler();
     try {
         const request = await imageRequest.setup(event);
-        console.log(request);
         const processedRequest = await imageHandler.process(request);
         const response = {
             "statusCode": 200,
@@ -30,10 +29,9 @@ exports.handler = async (event) => {
         }
         return response;
     } catch (err) {
-        console.log(err);
         const response = {
             "statusCode": err.status,
-            "headers" : getResponseHeaders(request, true),
+            "headers" : getDefaultHeaders(),
             "body": JSON.stringify(err),
             "isBase64Encoded": false
         }
@@ -46,22 +44,26 @@ exports.handler = async (event) => {
  * or error condition.
  * @param {boolean} isErr - has an error been thrown? 
  */
-const getResponseHeaders = (request, isErr) => {
+const getResponseHeaders = (request) => {
+    const headers = getDefaultHeaders()
+    
+    headers["Content-Type"] = request.ContentType
+    headers["Expires"] = request.Expires
+    headers["Last-Modified"] = request.LastModified
+    headers["Cache-Control"] = request.CacheControl
+    
+    return headers;
+}
+
+const getDefaultHeaders = () => {
     const corsEnabled = (process.env.CORS_ENABLED === "Yes");
     const headers = {
         "Access-Control-Allow-Methods": "GET",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
         "Access-Control-Allow-Credentials": true,
-        "Content-Type": request.ContentType,
-        "Expires": request.Expires,
-        "Last-Modified": request.LastModified,
-        "Cache-Control": request.CacheControl
     }
     if (corsEnabled) {
         headers["Access-Control-Allow-Origin"] = process.env.CORS_ORIGIN;
-    }
-    if (isErr) {
-        headers["Content-Type"] = "application/json"
     }
     return headers;
 }

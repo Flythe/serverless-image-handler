@@ -229,9 +229,15 @@ class ImageRequest {
         const path = event["path"];
         // ----
         const matchDefault = new RegExp(/^(\/?)([0-9a-zA-Z+\/]{4})*(([0-9a-zA-Z+\/]{2}==)|([0-9a-zA-Z+\/]{3}=))?$/);
+        const matchFavicon = new RegExp(/^(\/?)favicon\.ico$/);
         // ----
-        if (matchDefault.test(path)) {  // use sharp
+        if (matchDefault.test(path)) {
             return 'Default';
+        } else if (matchFavicon.test(path)) {
+            throw {
+                status: 404,
+                code: 'Not Found'
+            };
         } else {
             throw {
                 status: 400,

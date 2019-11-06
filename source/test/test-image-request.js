@@ -296,7 +296,25 @@ describe('isValidRequest()', function() {
             assert.deepEqual(result, expectedResult);
         });
     });
-    describe('002/elseCondition', function() {
+    describe('002/faviconRequest', function() {
+        it(`Should throw an error if a favicon is requested`, function() {
+            // Arrange
+            const event = {
+                path : '/favicon.ico'
+            }
+            process.env = {};
+            // Act
+            const imageRequest = new ImageRequest();
+            // Assert
+            assert.throws(function() {
+                const f = imageRequest.isValidRequest(event);
+            }, {
+                status: 404,
+                code: 'Not Found'
+            });
+        });
+    });
+    describe('003/elseCondition', function() {
         it(`Should throw an error if the method cannot determine the request
             type based on the three groups given`, function() {
             // Arrange
