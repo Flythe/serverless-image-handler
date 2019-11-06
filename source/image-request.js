@@ -23,8 +23,8 @@ class ImageRequest {
             this.isValidRequest(event);
 
             this.bucket = this.parseImageBucket(event);
-            this.key = this.getImageKey(event);
-            this.edits = this.getImageEdits(event);
+            this.key = this.decodeRequest(event).key;
+            this.edits = this.decodeRequest(event).edits;
             this.edits = this.checkResize(this.edits);
             this.originalImage = await this.getOriginalImage(this.bucket, this.key)
 
@@ -202,26 +202,6 @@ class ImageRequest {
             const sourceBuckets = this.getAllowedSourceBuckets();
             return sourceBuckets[0];
         }
-    }
-
-    /**
-     * Parses the edits to be made to the original image.
-     * @param {String} event - Lambda request body.
-     */
-    getImageEdits(event) {
-        const decoded = this.decodeRequest(event);
-        return decoded.edits;
-    }
-
-    /**
-     * Parses the name of the appropriate Amazon S3 key corresponding to the
-     * original image.
-     * @param {String} event - Lambda request body.
-     */
-    getImageKey(event) {
-        // Decode the image request and return the image key
-        const decoded = this.decodeRequest(event);
-        return decoded.key;
     }
 
     /**

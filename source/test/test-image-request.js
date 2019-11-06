@@ -283,52 +283,6 @@ describe('parseImageBucket()', function() {
 });
 
 // ----------------------------------------------------------------------------
-// getImageEdits()
-// ----------------------------------------------------------------------------
-describe('getImageEdits()', function() {
-    describe('001/defaultRequestType', function() {
-        it(`Should pass if the proper result is returned for a sample base64-
-            encoded image request`, function() {
-            // Arrange
-            const event = {
-                path : '/eyJlZGl0cyI6eyJncmF5c2NhbGUiOiJ0cnVlIiwicm90YXRlIjo5MCwiZmxpcCI6InRydWUifX0='
-            }
-            // Act
-            const imageRequest = new ImageRequest();
-            const result = imageRequest.getImageEdits(event, 'Default');
-            // Assert
-            const expectedResult = {
-                grayscale: 'true',
-                rotate: 90,
-                flip: 'true'
-            }
-            assert.deepEqual(result, expectedResult);
-        });
-    });
-});
-
-// ----------------------------------------------------------------------------
-// getImageKey()
-// ----------------------------------------------------------------------------
-describe('getImageKey()', function() {
-    describe('001/defaultRequestType', function() {
-        it(`Should pass if an image key value is provided in the default
-            request format`, function() {
-            // Arrange
-            const event = {
-                path : '/eyJidWNrZXQiOiJteS1zYW1wbGUtYnVja2V0Iiwia2V5Ijoic2FtcGxlLWltYWdlLTAwMS5qcGcifQ=='
-            }
-            // Act
-            const imageRequest = new ImageRequest();
-            const result = imageRequest.getImageKey(event, 'Default');
-            // Assert
-            const expectedResult = 'sample-image-001.jpg';
-            assert.deepEqual(result, expectedResult);
-        });
-    });
-});
-
-// ----------------------------------------------------------------------------
 // isValidRequest()
 // ----------------------------------------------------------------------------
 describe('isValidRequest()', function() {
