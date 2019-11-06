@@ -74,14 +74,19 @@ class ImageRequest {
     getOutputFormat(event) {
         const autoWebP = process.env.AUTO_WEBP;
         const requestFormat = event.outputFormat;
+        let returnFormat = null;
 
         if (autoWebP && event.headers.Accept && event.headers.Accept.includes("image/webp") && requestFormat === undefined) {
-            return "webp";
+            returnFormat = "webp";
         } else if (requestFormat !== undefined) {
-            return requestFormat;
+            returnFormat = requestFormat;
+        }
+
+        if (returnFormat !== null) {
+            this.ContentType = 'image/' + returnFormat;
         }
         
-        return null;
+        return returnFormat;
     }
 
     /**

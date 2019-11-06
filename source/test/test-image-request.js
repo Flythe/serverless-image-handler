@@ -130,7 +130,7 @@ describe('setup()', function() {
             const imageRequest = new ImageRequest();
             await imageRequest.setup(event);
             const expectedResult = {
-                ContentType: 'image',
+                ContentType: 'image/webp',
                 Expires: 'never',
                 LastModified: 'now',
                 bucket: 'allowedBucket001',
