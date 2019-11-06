@@ -54,7 +54,8 @@ const getResponseHeaders = (request, isErr) => {
         "Access-Control-Allow-Credentials": true,
         "Content-Type": request.ContentType,
         "Expires": request.Expires,
-        "Last-Modified": request.LastModified
+        "Last-Modified": request.LastModified,
+        "Cache-Control": request.CacheControl
     }
     if (corsEnabled) {
         headers["Access-Control-Allow-Origin"] = process.env.CORS_ORIGIN;

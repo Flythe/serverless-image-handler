@@ -18,6 +18,7 @@ let btoa = require('btoa');
 const defaultHeaders = {
     ContentType: 'image',
     Expires: 'never',
+    CacheControl: 'controlled',
     LastModified: 'now'
 }
 
@@ -125,6 +126,7 @@ describe('setup()', function() {
             const expectedResult = {
                 ContentType: 'image/webp',
                 Expires: 'never',
+                CacheControl: 'controlled',
                 LastModified: 'now',
                 bucket: 'allowedBucket001',
                 key: 'custom-image.jpg',

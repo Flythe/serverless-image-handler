@@ -56,6 +56,7 @@ class ImageRequest {
             this.ContentType = originalImage.ContentType;
             this.Expires = originalImage.Expires;
             this.LastModified = originalImage.LastModified;
+            this.CacheControl = originalImage.CacheControl;
             return Promise.resolve(originalImage.Body);
         }
         catch(err) {
