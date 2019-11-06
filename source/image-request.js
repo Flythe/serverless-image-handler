@@ -78,7 +78,7 @@ class ImageRequest {
         const requestFormat = event.outputFormat;
         let returnFormat = null;
 
-        if (autoWebP && event.headers.Accept && event.headers.Accept.includes("image/webp") && requestFormat === undefined) {
+        if (autoWebP === 'Yes' && event.headers.Accept && event.headers.Accept.includes("image/webp") && requestFormat === undefined) {
             returnFormat = "webp";
         } else if (requestFormat !== undefined) {
             returnFormat = requestFormat;
