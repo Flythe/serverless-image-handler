@@ -67,10 +67,6 @@ describe('process()', function() {
                 bucket: "sample-bucket",
                 key: "sample-image-001.jpg",
                 outputFormat: "png",
-                edits: {
-                    grayscale: true,
-                    flip: true
-                },
                 originalImage: new Buffer('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64')
             }
             // Act
@@ -103,7 +99,7 @@ describe('process()', function() {
             const imageHandler = new ImageHandler();
             const result = await imageHandler.process(request);
             // Assert
-            assert.deepEqual(result, 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==');
+            assert.deepEqual(result, 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsSAAALEgHS3X78AAAADUlEQVQI12P4z8BQDwAEgAF/gtB8VwAAAABJRU5ErkJggg==');
         });
     });
 });

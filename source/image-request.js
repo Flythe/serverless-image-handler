@@ -28,6 +28,12 @@ class ImageRequest {
             this.edits = this.checkResize(this.edits);
             this.originalImage = await this.getOriginalImage(this.bucket, this.key)
 
+            const outputFormat = this.addWebP(event);
+
+            if (outputFormat !== null) {
+                this.outputFormat = outputFormat;
+            }
+
             return Promise.resolve(this);
         } catch (err) {
             return Promise.reject(err);
@@ -56,6 +62,20 @@ class ImageRequest {
                 message: err.message
             })
         }
+    }
+
+    /**
+    * Return the output format depending on the accepts headers
+    * @param {Object} event - The request body.
+    */
+    addWebP(event) {
+        const autoWebP = process.env.AUTO_WEBP;
+
+        if (autoWebP && event.headers.Accept && event.headers.Accept.includes("image/webp")) {
+            return "webp";
+        }
+        
+        return null;
     }
 
     /**

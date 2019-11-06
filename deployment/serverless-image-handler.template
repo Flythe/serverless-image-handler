@@ -13,6 +13,12 @@
             "Type" : "String",
             "AllowedValues" : [ "Yes", "No" ]
         },
+        "AutoWebP" : {
+            "Description" : "Would you like to enable automatic WebP based on accept headers? Select 'Yes' if so.",
+            "Default" : "Yes",
+            "Type" : "String",
+            "AllowedValues" : [ "Yes", "No" ]
+        },
         "CorsEnabled" : {
             "Description" : "Would you like to enable Cross-Origin Resource Sharing (CORS) for the image handler API? Select 'Yes' if so.",
             "Default" : "No",
@@ -225,6 +231,9 @@
                 "Timeout": 30,
                 "Environment" : {
                     "Variables" : {
+                        "AUTO_WEBP" : {
+                            "Ref" : "AutoWebP"
+                        },
                         "CORS_ENABLED" : { 
                             "Ref" : "CorsEnabled" 
                         },
@@ -370,6 +379,10 @@
         "AllowedSizes" : {
             "Description" : "Sizes in pixels that are allowed to be requested through the API.",
             "Value" : { "Ref": "AllowedSizes" }
+        },
+        "AutoWebP" : {
+            "Description" : "Indicates whether webp will be automatically served to clients that accept it.",
+            "Value": { "Ref": "AutoWebP" }
         },
         "DefaultToFirstSize" : {
             "Description" : "Return the first size in the allowed sizes array when no resize command is specified in the request.",

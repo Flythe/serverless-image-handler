@@ -88,7 +88,49 @@ describe('setup()', function() {
             assert.deepEqual(imageRequest, expectedResult);
         });
     });
-    describe('003/errorCase', function() {
+    describe('003/webPFormatRequest', function() {
+        it(`Should pass when a image request is provided and populate
+            the ImageRequest object with the proper values`, async function() {
+            // Arrange
+            const event = {
+                path : '/eyJidWNrZXQiOiJhbGxvd2VkQnVja2V0MDAxIiwia2V5IjoiY3VzdG9tLWltYWdlLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJoZWlnaHQiOjIwMCwid2lkdGgiOjIwMH19fQ==',
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                }
+            }
+            process.env = {
+                SOURCE_BUCKETS : "allowedBucket001, allowedBucket002",
+                AUTO_WEBP: "Yes"
+            }
+            // ----
+            const S3 = require('aws-sdk/clients/s3');
+            const sinon = require('sinon');
+            const getObject = S3.prototype.getObject = sinon.stub();
+            getObject.withArgs({Bucket: 'allowedBucket001', Key: 'custom-image.jpg'}).returns({
+                promise: () => { return {
+                  Body: Buffer.from('SampleImageContent\n')
+                }}
+            })
+            // Act
+            const imageRequest = new ImageRequest();
+            await imageRequest.setup(event);
+            const expectedResult = {
+                bucket: 'allowedBucket001',
+                key: 'custom-image.jpg',
+                outputFormat: 'webp',
+                edits: {
+                    resize: {
+                        height: 200,
+                        width: 200
+                    }
+                },
+                originalImage: Buffer.from('SampleImageContent\n')
+            }
+            // Assert
+            assert.deepEqual(imageRequest, expectedResult);
+        });
+    });
+    describe('004/errorCase', function() {
         it(`Should pass when an error is caught`, async function() {
             // Assert
             const event = {
@@ -841,6 +883,81 @@ describe('addSizeToRequest()', function() {
                 code: 'Resize::NoDefault',
                 message: 'No resize was specified and no default size is defined.'
             });
+        });
+    });
+});
+
+// ----------------------------------------------------------------------------
+// addWebP()
+// ----------------------------------------------------------------------------
+describe('addWebP()', function () {
+    describe('001/AcceptsHeaderIncludesWebP', function () {
+        it(`Should pass if it returns "webp" for an accepts header which includes webp`, function () {
+            // Arrange
+            process.env = {
+                AUTO_WEBP: true
+            };
+            const event = {
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                }
+            };
+            // Act
+            const imageRequest = new ImageRequest();
+            var result = imageRequest.addWebP(event);
+            // Assert
+            assert.deepEqual(result, "webp");
+        });
+    });
+    describe('002/AcceptsHeaderDoesNotIncludeWebP', function () {
+        it(`Should pass if it returns null for an accepts header which does not include webp`, function () {
+            // Arrange
+            process.env = {
+                AUTO_WEBP: true
+            };
+            const event = {
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                }
+            };
+            // Act
+            const imageRequest = new ImageRequest();
+            var result = imageRequest.addWebP(event);
+            // Assert
+            assert.deepEqual(result, null);
+        });
+    });
+    describe('003/AutoWebPDisabled', function () {
+        it(`Should pass if it returns null when AUTO_WEBP is disabled with accepts header including webp`, function () {
+            // Arrange
+            process.env = {
+                AUTO_WEBP: false
+            };
+            const event = {
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                }
+            };
+            // Act
+            const imageRequest = new ImageRequest();
+            var result = imageRequest.addWebP(event);
+            // Assert
+            assert.deepEqual(result, null);
+        });
+    });
+    describe('004/AutoWebPUnset', function () {
+        it(`Should pass if it returns null when AUTO_WEBP is not set with accepts header including webp`, function () {
+            // Arrange
+            const event = {
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                }
+            };
+            // Act
+            const imageRequest = new ImageRequest();
+            var result = imageRequest.addWebP(event);
+            // Assert
+            assert.deepEqual(result, null);
         });
     });
 });
