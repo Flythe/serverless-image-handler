@@ -104,7 +104,7 @@ describe('setup()', function() {
             const event = {
                 path : '/eyJidWNrZXQiOiJhbGxvd2VkQnVja2V0MDAxIiwia2V5IjoiY3VzdG9tLWltYWdlLmpwZyIsImVkaXRzIjp7InJlc2l6ZSI6eyJoZWlnaHQiOjIwMCwid2lkdGgiOjIwMH19fQ==',
                 headers: {
-                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                    Accept: "application/xml;q=0.9,image/webp,*/*;q=0.8,application/signed-exchange;v=b3"
                 }
             }
             process.env = {
@@ -869,7 +869,7 @@ describe('getOutputFormat()', function () {
             const event = {
                 path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
                 headers: {
-                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                    Accept: "application/xml;q=0.9,image/webp,*/*;q=0.8,application/signed-exchange;v=b3"
                 }
             };
             // Act
@@ -888,7 +888,7 @@ describe('getOutputFormat()', function () {
             const event = {
                 path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
                 headers: {
-                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                    Accept: "application/xml;q=0.9,*/*;q=0.8,application/signed-exchange;v=b3"
                 }
             };
             // Act
@@ -907,7 +907,7 @@ describe('getOutputFormat()', function () {
             const event = {
                 path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
                 headers: {
-                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                    Accept: "application/xml;q=0.9,image/webp,*/*;q=0.8,application/signed-exchange;v=b3"
                 }
             };
             // Act
@@ -923,7 +923,7 @@ describe('getOutputFormat()', function () {
             const event = {
                 path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
                 headers: {
-                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                    Accept: "application/xml;q=0.9,image/webp,*/*;q=0.8,application/signed-exchange;v=b3"
                 }
             };
             // Act
@@ -939,7 +939,7 @@ describe('getOutputFormat()', function () {
             const event = {
                 path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
                 headers: {
-                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                    Accept: "application/xml;q=0.9,image/webp,*/*;q=0.8,application/signed-exchange;v=b3"
                 },
                 outputFormat: 'png'
             };
@@ -959,7 +959,7 @@ describe('getOutputFormat()', function () {
             const event = {
                 path: '/eyJidWNrZXQiOiJ2YWxpZEJ1Y2tldCIsImtleSI6InZhbGlkS2V5IiwiZWRpdHMiOnsiZ3JheXNjYWxlIjp0cnVlfX0=',
                 headers: {
-                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3"
+                    Accept: "application/xml;q=0.9,image/webp,*/*;q=0.8,application/signed-exchange;v=b3"
                 },
                 outputFormat: 'png'
             };
