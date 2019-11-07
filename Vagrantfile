@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
   config.vm.network :forwarded_port, guest: 8080, host: 8080
   config.vm.synced_folder ".", "/vagrant"
 
-  config.vm.provision "shell", :args => [settings['aws_region'],settings['aws_access_key'],settings['aws_secret_key']] privileged: false, inline: <<-SHELL
+  config.vm.provision "shell", :args => [settings['aws_region'],settings['aws_access_key'],settings['aws_secret_key']], privileged: false, inline: <<-SHELL
     echo "Updating"
     sudo apt-get update -qq
 
