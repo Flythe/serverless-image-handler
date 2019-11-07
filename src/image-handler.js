@@ -1,16 +1,3 @@
-/*********************************************************************************************************************
- *  Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
- *                                                                                                                    *
- *  Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance        *
- *  with the License. A copy of the License is located at                                                             *
- *                                                                                                                    *
- *      http://aws.amazon.com/asl/                                                                                    *
- *                                                                                                                    *
- *  or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES *
- *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    *
- *  and limitations under the License.                                                                                *
- *********************************************************************************************************************/
-
 const AWS = require('aws-sdk');
 const sharp = require('sharp');
 
@@ -31,7 +18,7 @@ class ImageHandler {
 
         const bufferImage = await modifiedImage.toBuffer();
 
-        return bufferImage.toString('base64');
+        return Promise.resolve(bufferImage.toString('base64'));
     }
 
     /**
@@ -44,7 +31,7 @@ class ImageHandler {
         const image = sharp(originalImage).rotate();
 
         if (edits === undefined) {
-            return image;
+            return Promise.resolve(image);
         }
 
         const keys = Object.keys(edits);
@@ -73,7 +60,7 @@ class ImageHandler {
         }
 
         // Return the modified image
-        return image;
+        return Promise.resolve(image);
     }
    
     /**

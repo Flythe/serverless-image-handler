@@ -1,15 +1,8 @@
-/*********************************************************************************************************************
- *  Copyright 2019 Amazon.com, Inc. or its affiliates. All Rights Reserved.                                           *
- *                                                                                                                    *
- *  Licensed under the Amazon Software License (the "License"). You may not use this file except in compliance        *
- *  with the License. A copy of the License is located at                                                             *
- *                                                                                                                    *
- *      http://aws.amazon.com/asl/                                                                                    *
- *                                                                                                                    *
- *  or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES *
- *  OR CONDITIONS OF ANY KIND, express or implied. See the License for the specific language governing permissions    *
- *  and limitations under the License.                                                                                *
- *********************************************************************************************************************/
+const AWS = require('aws-sdk');
+
+const ResizeExceptions = require('./exceptions/ResizeExceptions')
+const RequestExceptions = require('./exceptions/RequestExceptions')
+const DecodeExceptions = require('./exceptions/DecodeExceptions')
 
 class ImageRequest {
 
@@ -47,8 +40,7 @@ class ImageRequest {
      * @return {Promise} - The original image or an error.
      */
     async getOriginalImage(bucket, key) {
-        const S3 = require('aws-sdk/clients/s3');
-        const s3 = new S3();
+        const s3 = new AWS.S3();
         const imageLocation = { Bucket: bucket, Key: key };
         const request = s3.getObject(imageLocation).promise();
         try {
@@ -59,13 +51,12 @@ class ImageRequest {
             this.LastModified = formattedLastModified;
             this.CacheControl = originalImage.CacheControl;
             return Promise.resolve(originalImage.Body);
-        }
-        catch(err) {
-            return Promise.reject({
+        } catch(err) {
+            return Promise.reject(new Error({
                 status: ("NoSuchKey" == err.code) ? 404 : 500,
                 code: err.code,
                 message: err.message
-            })
+            }))
         }
     }
 
@@ -148,11 +139,7 @@ class ImageRequest {
         if (allowedSizes.includes(requestedSize)) {
             return edits;
         } else {
-            throw ({
-                status: 400,
-                code: 'Resize::SizeNotAllowed',
-                message: 'The size you specified is not allowed. Please check the sizes specified in ALLOWED_SIZES.'
-            })
+            throw new ResizeExceptions.ResizeSizeNotAllowedException();
         }
     }
 
@@ -175,11 +162,7 @@ class ImageRequest {
 
             return edits;
         } else {
-            throw ({
-                status: 400,
-                code: 'Resize::NoDefault',
-                message: 'No resize was specified and no default size is defined.'
-            })
+            throw new ResizeExceptions.ResizeNoDefaultException()
         }
     }
 
@@ -209,11 +192,7 @@ class ImageRequest {
             if (sourceBuckets.includes(decoded.bucket)) {
                 return decoded.bucket;
             } else {
-                throw ({
-                    status: 403,
-                    code: 'ImageBucket::CannotAccessBucket',
-                    message: 'The bucket you specified could not be accessed. Please check that the bucket is specified in your SOURCE_BUCKETS.'
-                });
+                throw new RequestExceptions.CannotAccessBucketException()
             }
         } else {
             // Try to use the default image source bucket env var
@@ -235,16 +214,11 @@ class ImageRequest {
         if (matchDefault.test(path)) {
             return 'Default';
         } else if (matchFavicon.test(path)) {
-            throw {
-                status: 404,
-                code: 'Not Found'
-            };
+            // Always return 404 Not Found exception when request for
+            // favicon comes in.
+            throw new RequestExceptions.FileNotFoundException()
         } else {
-            throw {
-                status: 400,
-                code: 'RequestTypeError',
-                message: 'The type of request you are making could not be processed. Please ensure that your original image is of a supported file type (jpg, png, tiff, webp) and that your image request is provided in the correct syntax. Refer to the documentation for additional guidance on forming image requests.'
-            };
+            throw new RequestExceptions.RequestTypeException()
         }
     }
 
@@ -262,18 +236,10 @@ class ImageRequest {
             try {
                 return JSON.parse(toBuffer.toString('ascii'));
             } catch (e) {
-                throw ({
-                    status: 400,
-                    code: 'DecodeRequest::CannotDecodeRequest',
-                    message: 'The image request you provided could not be decoded. Please check that your request is base64 encoded properly and refer to the documentation for additional guidance.'
-                });
+                throw new DecodeExceptions.DecodeRequestException()
             }
         } else {
-            throw ({
-                status: 400,
-                code: 'DecodeRequest::CannotReadPath',
-                message: 'The URL path you provided could not be read. Please ensure that it is properly formed according to the solution documentation.'
-            });
+            throw new DecodeExceptions.CannotReadBucketPathException()
         }
     }
 
@@ -285,11 +251,7 @@ class ImageRequest {
     getAllowedSourceBuckets() {
         const sourceBuckets = process.env.SOURCE_BUCKETS;
         if (sourceBuckets === undefined) {
-            throw ({
-                status: 400,
-                code: 'GetAllowedSourceBuckets::NoSourceBuckets',
-                message: 'The SOURCE_BUCKETS variable could not be read. Please check that it is not empty and contains at least one source bucket, or multiple buckets separated by commas. Spaces can be provided between commas and bucket names, these will be automatically parsed out when decoding.'
-            });
+            throw new RequestExceptions.NoSourceBucketException()
         } else {
             const formatted = sourceBuckets.replace(/\s+/g, '');
             const buckets = formatted.split(',');

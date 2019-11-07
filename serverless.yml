@@ -39,7 +39,7 @@ resources:
 
 functions:
   index:
-    handler: source/index.handler
+    handler: src/index.handler
     events:
       - http:
           path: /{any+}
