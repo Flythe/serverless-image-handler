@@ -39,7 +39,7 @@ resources:
 
 functions:
   index:
-    handler: index.handler
+    handler: source/index.handler
     events:
       - http:
           path: /{any+}
@@ -51,7 +51,7 @@ Outputs:
     Value:
       'Fn::GetAtt': [ CloudFrontDistribution, DomainName ]
 custom:
-  settingsFilePath: ${opt:settings,'./settings.yml'}
+  settingsFilePath: ${opt:settings,'./settings/serverless-settings.yml'}
   settings: ${file(${self:custom.settingsFilePath}):stages.${self:provider.stage}}
   serverless-offline:
     host: 0.0.0.0

@@ -11,10 +11,10 @@ stages:
     <<: *defaults
     environment:
       <<: *defaults.environment
-      SOURCE_BUCKET: 'allard-test-bucket'
+      SOURCE_BUCKET: 'bucket-name'
       AUTO_WEBP: 'Yes'
       CORS_ENABLED: 'No'
       CORS_ORIGIN: '*'
-      SOURCE_BUCKETS: 'allard-test-bucket'
+      SOURCE_BUCKETS: 'bucket-name'
       ALLOWED_SIZES: '642x0,100x100,200x200,800x800,1600x0'
       DEFAULT_TO_FIRST_SIZE: 'Yes'

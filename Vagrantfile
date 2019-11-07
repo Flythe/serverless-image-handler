@@ -3,7 +3,7 @@
 
 require 'yaml'
 
-settings = YAML.load_file 'vagrant.yml'
+settings = YAML.load_file 'settings/vagrant.yml'
 
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/trusty64"

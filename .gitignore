@@ -109,3 +109,6 @@ dist
 .vagrant
 
 package-lock.json
+
+settings/vagrant.yml
+settings/serverless-settings.yml
