@@ -1,0 +1,65 @@
+service: ${self:custom.settings.serviceName}
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: ${opt:stage,'dev'}
+  iamRoleStatements:
+    - Effect: "Allow"
+      Resource: "arn:aws:s3:::${self:custom.settings.environment.SOURCE_BUCKET}/*"
+
+resources:
+  Resources:
+    CloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Comment: Cloudfront distribution for serverless image handler
+          DefaultCacheBehavior:
+            TargetOriginId: ApiGateway
+            ViewerProtocolPolicy: 'redirect-to-https'
+            DefaultTTL: 30
+            ForwardedValues:
+              Headers:
+                - 'Accept'
+              QueryString: true
+          Enabled: true
+          Origins:
+            - Id: ApiGateway
+              DomainName:
+                Fn::Join:
+                  - "."
+                  - - Ref: ApiGatewayRestApi
+                    - execute-api.${self:custom.settings.region}.amazonaws.com
+              OriginPath: "/${self:provider.stage}"
+              CustomOriginConfig:
+                HTTPPort: 80
+                HTTPSPort: 443
+                OriginProtocolPolicy: https-only
+
+functions:
+  index:
+    handler: index.handler
+    events:
+      - http:
+          path: /{any+}
+          method: get
+          contentHandling: CONVERT_TO_BINARY
+    environment: ${self:custom.settings.environment}
+Outputs:
+  CloudFrontDistributionOutput:
+    Value:
+      'Fn::GetAtt': [ CloudFrontDistribution, DomainName ]
+custom:
+  settingsFilePath: ${opt:settings,'./settings.yml'}
+  settings: ${file(${self:custom.settingsFilePath}):stages.${self:provider.stage}}
+  serverless-offline:
+    host: 0.0.0.0
+    port: ${self:custom.settings.offlinePort}
+  apigwBinary:
+    types:
+      - '*/*'
+plugins:
+  - serverless-offline
+  - serverless-apigw-binary
+  - serverless-apigwy-binary
