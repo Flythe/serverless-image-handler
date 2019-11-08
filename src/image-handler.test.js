@@ -20,6 +20,14 @@ const greenRect = {
     }
 }
 
+const defaultImageObj = {
+    Body: blueRect,
+    finalFormat: 'png',
+    CacheControl: 'max-age=86400',
+    LastModified: '2019-11-06T21:36:00.000z',
+    Expires: '2019-11-06T21:36:00.000z'
+}
+
 // Set up S3 getObject mocking
 const mockS3GetObject = jest.fn()
 
@@ -46,6 +54,7 @@ describe('process()', () => {
                 grayscale: true,
                 flip: true
             },
+            originalImageObj: defaultImageObj,
             originalImage: blueRect
         }
         
@@ -53,40 +62,43 @@ describe('process()', () => {
             .grayscale()
             .flip()
             .toBuffer().then((expectedResult) => {
-                const imageHandler = new ImageHandler()
-                expect(imageHandler.process(request))
+                const imageHandler = new ImageHandler(request)
+                
+                expect(imageHandler.process())
                     .resolves
-                    .toMatch(expectedResult.toString('base64'))
+                    .toMatchObject({ body: expectedResult.toString('base64') })
                 done()
             })
     })
     test('002/withToFormat', done => {
         const request = {
-            outputFormat: 'png',
+            requiredFormat: 'jpg',
+            originalImageObj: defaultImageObj,
             originalImage: blueRect
         }
-
+        
         sharp(request.originalImage)
-            .toFormat(request.outputFormat)
+            .toFormat(request.requiredFormat)
             .toBuffer().then((expectedResult) => {
-                const imageHandler = new ImageHandler()
-                expect(imageHandler.process(request))
+                const imageHandler = new ImageHandler(request)
+                expect(imageHandler.process())
                     .resolves
-                    .toMatch(expectedResult.toString('base64'))
+                    .toMatchObject({ body: expectedResult.toString('base64') })
                 done()
             })
     })
     test('003/noEditsSpecified', done => {
         const request = {
+            originalImageObj: defaultImageObj,
             originalImage: blueRect
         }
 
         sharp(request.originalImage)
             .toBuffer().then((expectedResult) => {
-                const imageHandler = new ImageHandler()
-                expect(imageHandler.process(request))
+                const imageHandler = new ImageHandler(request)
+                expect(imageHandler.process())
                     .resolves
-                    .toMatch(expectedResult.toString('base64'))
+                    .toMatchObject({ body: expectedResult.toString('base64') })
                 done()
             })
     })
@@ -97,19 +109,16 @@ describe('process()', () => {
 // ----------------------------------------------------------------------------
 describe('applyEdits()', () => {
     test('001/standardEdits', () => {
-        const originalImage = Buffer.from('sampleImageContent')
+        const originalImage = blueRect
         const edits = {
-            grayscale: true,
-            flip: true
+            flip: true,
+            greyscale: true
         }
         const expectedResult = {
-            options: {
-                greyscale: true,
-                flip: true
-            }
+            options: edits
         }
 
-        const imageHandler = new ImageHandler()        
+        const imageHandler = new ImageHandler()
         return expect(imageHandler.applyEdits(originalImage, edits))
             .resolves
             .toMatchObject(expectedResult)
@@ -138,7 +147,7 @@ describe('applyEdits()', () => {
             }
         }
 
-        const imageHandler = new ImageHandler()
+        const imageHandler = new ImageHandler({})
         return expect(imageHandler.applyEdits(originalImage, edits))
             .resolves
             .toMatchObject(expectedResult)
@@ -213,5 +222,106 @@ describe('getOverlayImage', () => {
         return expect(imageHandler.getOverlayImage('invalidBucket', 'invalidKey'))
             .rejects
             .toEqual(mockError)
+    })
+})
+
+// ----------------------------------------------------------------------------
+// forwardHTTPHeaders()
+// ----------------------------------------------------------------------------
+describe('forwardHTTPHeaders', () => {
+    test('001/headers/defined', () => {
+        const imageHandler = new ImageHandler()
+        
+        const input = {
+            finalFormat: 'png',
+            CacheControl: 'max-age=86400',
+            LastModified: '2019-11-06T21:36:00.000z',
+            Expires: '2019-11-06T21:36:00.000z'
+        }
+
+        const expectedResult = {
+            ContentType: 'image/png',
+            CacheControl: 'max-age=86400',
+            LastModified: 'Wed, 06 Nov 2019 21:36:00 GMT',
+            Expires: 'Wed, 06 Nov 2019 21:36:00 GMT'
+        }
+
+        return expect(imageHandler.forwardHTTPHeaders(input))
+            .toEqual(expectedResult)
+    })
+    test('002/headers/undefined', () => {
+        const imageHandler = new ImageHandler()
+
+        const input = {
+            finalFormat: 'png',
+            CacheControl: 'max-age=86400'
+        }
+
+        const expectedResult = {
+            ContentType: 'image/png'
+        }
+        
+        return expect(imageHandler.forwardHTTPHeaders(input))
+            .toMatchObject(expectedResult)
+    })
+    test('003/finalFormat/jpeg', () => {
+        const imageHandler = new ImageHandler()
+
+        const input = {
+            finalFormat: 'jpeg',
+            CacheControl: 'max-age=86400'
+        }
+
+        const expectedResult = {
+            ContentType: 'image/jpeg'
+        }
+        
+        return expect(imageHandler.forwardHTTPHeaders(input))
+            .toMatchObject(expectedResult)
+    })
+    test('004/finalFormat/jpg', () => {
+        const imageHandler = new ImageHandler()
+
+        const input = {
+            finalFormat: 'jpg',
+            CacheControl: 'max-age=86400'
+        }
+
+        const expectedResult = {
+            ContentType: 'image/jpeg'
+        }
+        
+        return expect(imageHandler.forwardHTTPHeaders(input))
+            .toMatchObject(expectedResult)
+    })
+    test('005/finalFormat/webp', () => {
+        const imageHandler = new ImageHandler()
+
+        const input = {
+            finalFormat: 'webp',
+            CacheControl: 'max-age=86400'
+        }
+
+        const expectedResult = {
+            ContentType: 'image/webp'
+        }
+        
+        return expect(imageHandler.forwardHTTPHeaders(input))
+            .toMatchObject(expectedResult)
+    })
+    test('006/finalFormat/jpeg', () => {
+        const imageHandler = new ImageHandler()
+
+        const input = {
+            finalFormat: 'gif',
+            CacheControl: 'max-age=86400'
+        }
+
+        const expectedResult = {
+            ContentType: 'image/gif'
+        }
+        
+        return expect(imageHandler.forwardHTTPHeaders(input))
+            .toMatchObject(expectedResult)
     })
 })

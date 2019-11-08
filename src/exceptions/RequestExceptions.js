@@ -34,7 +34,27 @@ class NoSourceBucketException extends Error {
     }
 }
 
+class NoSecurityHash extends Error {
+    constructor (message) {
+        super()
+        this.status = 403,
+        this.code = 'Request::NoSecurityHash',
+        this.message = 'The SECURITY_KEY variable is set but no hash was provided.'
+    }
+}
+
+class HashException extends Error {
+    constructor (message) {
+        super()
+        this.status = 403,
+        this.code = 'Request::HashException',
+        this.message = 'Invalid hash.'
+    }
+}
+
 module.exports.RequestTypeException = RequestTypeException
 module.exports.FileNotFoundException = FileNotFoundException
 module.exports.CannotAccessBucketException = CannotAccessBucketException
 module.exports.NoSourceBucketException = NoSourceBucketException
+module.exports.NoSecurityHash = NoSecurityHash
+module.exports.HashException = HashException

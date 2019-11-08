@@ -18,3 +18,4 @@ stages:
       SOURCE_BUCKETS: 'bucket-name'
       ALLOWED_SIZES: '642x0,100x100,200x200,800x800,1600x0'
       DEFAULT_TO_FIRST_SIZE: 'Yes'
+      SECURITY_KEY: ''

@@ -1,264 +1,106 @@
-const AWS = require('aws-sdk');
+const AWS = require('aws-sdk')
+const sharp = require('sharp')
 
-const ResizeExceptions = require('./exceptions/ResizeExceptions')
-const RequestExceptions = require('./exceptions/RequestExceptions')
-const DecodeExceptions = require('./exceptions/DecodeExceptions')
+const parser = require('./parsers/request-parser')
+const resizeParser = require('./parsers/resize-request-parser')
+const utils = require('./helpers/utils')
 
 class ImageRequest {
+    /**
+     * @param {Object} event - Lambda request body.
+     */
+    constructor (event) {
+        this.event = event
+
+        parser.isValid(event)
+
+        this.request = parser.decodeRequest(event)
+
+        parser.isSecure(this.request)
+
+        this.bucket = parser.parseBucket(this.request.bucket)
+
+        this.key = this.request.key
+        this.edits = this.request.edits
+
+        this.requestFormat = event.outputFormat
+        this.headers = event.headers
+    }
 
     /**
      * Initializer function for creating a new image request, used by the image
      * handler to perform image modifications.
-     * @param {Object} event - Lambda request body.
      */
-    async setup(event) {
-        try {
-            this.isValidRequest(event);
+    async setup() {
+        const parserObj = new resizeParser()
+        this.edits = parserObj.checkResize(this.edits)
+        
+        this.originalImageObj = await this.getOriginalImage(this.bucket, this.key)
+        this.originalImage = this.originalImageObj.Body
 
-            this.bucket = this.parseImageBucket(event);
-            this.key = this.decodeRequest(event).key;
-            this.edits = this.decodeRequest(event).edits;
-            this.edits = this.checkResize(this.edits);
-            this.originalImage = await this.getOriginalImage(this.bucket, this.key)
-
-            const outputFormat = this.getOutputFormat(event);
-
-            if (outputFormat !== null) {
-                this.outputFormat = outputFormat;
-            }
-
-            return Promise.resolve(this);
-        } catch (err) {
-            return Promise.reject(err);
+        const requiredFormat = this.getOutputFormat(this.headers, this.requestFormat)
+        
+        if (requiredFormat !== false) {
+            this.originalImageObj.finalFormat = requiredFormat
+            this.requiredFormat = requiredFormat
+        } else {
+            this.originalImageObj.finalFormat = await this.getImageFormat(this.originalImage)
         }
     }
 
     /**
      * Gets the original image from an Amazon S3 bucket.
-     * @param {String} bucket - The name of the bucket containing the image.
-     * @param {String} key - The key name corresponding to the image.
+     * @param {String} bucket - Requested bucket name.
+     * @param {String} key - Requested file key.
      * @return {Promise} - The original image or an error.
      */
     async getOriginalImage(bucket, key) {
-        const s3 = new AWS.S3();
-        const imageLocation = { Bucket: bucket, Key: key };
-        const request = s3.getObject(imageLocation).promise();
+        const s3 = new AWS.S3()
+        const imageLocation = { Bucket: bucket, Key: key }
+
         try {
-            const originalImage = await request;
-            const formattedLastModified = new Date(originalImage.LastModified).toUTCString();
-            this.ContentType = originalImage.ContentType;
-            this.Expires = originalImage.Expires;
-            this.LastModified = formattedLastModified;
-            this.CacheControl = originalImage.CacheControl;
-            return Promise.resolve(originalImage.Body);
+            const originalImage = await s3.getObject(imageLocation).promise()
+
+            return Promise.resolve(originalImage)
         } catch(err) {
-            return Promise.reject(new Error({
-                status: ("NoSuchKey" == err.code) ? 404 : 500,
+            const error = new Error({
+                status: 404,
                 code: err.code,
                 message: err.message
-            }))
+            })
+            return Promise.reject(error)
         }
     }
 
     /**
-    * Return the output format depending on the accepts headers
-    * @param {Object} event - The request body.
+    * Return the output format depending on the accepts headers.
+    * @param {Object} headers - HTTP headers provided by the client.
+    * @param {String} requestFormat - Requested output format.
+    * @return {String} - The final output format of the image.
     */
-    getOutputFormat(event) {
-        const autoWebP = process.env.AUTO_WEBP;
-        const requestFormat = event.outputFormat;
-        let returnFormat = null;
+    getOutputFormat(headers, requestFormat) {
+        const autoWebP = utils.externalVariableIsSet('AUTO_WEBP', 'Yes')
 
-        if (autoWebP === 'Yes' && event.headers.Accept && event.headers.Accept.includes("image/webp") && requestFormat === undefined) {
-            returnFormat = "webp";
-        } else if (requestFormat !== undefined) {
-            returnFormat = requestFormat;
+        if (autoWebP && headers.Accept && headers.Accept.includes('image/webp') && requestFormat === undefined) {
+            return 'webp'
         }
 
-        if (returnFormat !== null) {
-            this.ContentType = 'image/' + returnFormat;
+        if (requestFormat !== undefined) {
+            return requestFormat
         }
         
-        return returnFormat;
+        return false
     }
 
-    /**
-     * If resizing is restricted this function checks whether
-     * the request asks for a valid resize. When an image is
-     * requested without a resize specified and the DEFAULT_TO_FIRST_SIZE
-     * setting is set to 'Yes' it will add the default size to
-     * the request.
-     * @param {Object} edits - JSON object defining the edits that should be applied to the image.
-     */
-    checkResize(edits) {
-        if (!this.sizesRestricted()) {
-            return edits;    
-        } else if (this.resizeInRequest(edits)) {
-            edits = this.isAllowedResize(edits);
-        } else {
-            edits = this.addSizeToRequest(edits);
-        }
-        
-        if (edits.resize.width === 0) {
-            delete edits.resize.width;
-        } else if (edits.resize.height === 0) {
-            delete edits.resize.height;
-        }
+    async getImageFormat(originalImage) {
+        const image = sharp(originalImage)
+        const metadata = await image.metadata()
 
-        return edits;
-    }
+        const returnFormat = metadata.format.toLowerCase()
 
-    /**
-     * Checks whether the external variable ALLOWED_SIZES is set.
-     * This means that resizing the image is bound to a set of
-     * allowed sizes.
-     */
-    sizesRestricted() {
-        return this.externalVariableIsSet('ALLOWED_SIZES');
-    }
-
-    /**
-     * Checks whether a size is defined in the request.
-     * @param {Object} edits - JSON object defining the edits that should be applied to the image.
-     */
-    resizeInRequest(edits) {
-        return (edits.resize !== undefined &&
-            edits.resize !== ""
-            && (Object.keys(edits.resize).length !== 0 && edits.resize.constructor === Object));
-    }
-
-    /**
-     * Checks whether the requested image size is allowed by the
-     * ALLOWED_SIZES config.
-     * @param {Object} edits - JSON object defining the edits that should be applied to the image.
-     */
-    isAllowedResize(edits) {
-        const allowedSizes = process.env.ALLOWED_SIZES.split(',');
-        const requestedSize = edits.resize.width + 'x' + edits.resize.height;
-
-        if (allowedSizes.includes(requestedSize)) {
-            return edits;
-        } else {
-            throw new ResizeExceptions.ResizeSizeNotAllowedException();
-        }
-    }
-
-    /**
-     * When an image is requested without a resize specified and
-     * the DEFAULT_TO_FIRST_SIZE setting is set to 'Yes' this will
-     * add the default size to the request.
-     */
-    addSizeToRequest(edits) {
-        const defaultToFirstSize = (process.env.DEFAULT_TO_FIRST_SIZE === "Yes");
-        let firstSize = process.env.ALLOWED_SIZES.split(',')[0];
-
-        if (defaultToFirstSize) {
-            let [defaultWidth, defaultHeight] = firstSize.split('x');
-            
-            edits.resize = {
-                width: Number(defaultWidth),
-                height: Number(defaultHeight)
-            }
-
-            return edits;
-        } else {
-            throw new ResizeExceptions.ResizeNoDefaultException()
-        }
-    }
-
-    /**
-     * Checks whether an externally set variable exists and is not empty.
-     * @param {String} key - Key to the variable.
-     */
-    externalVariableIsSet(key) {
-        if (process.env[key] !== "" && process.env[key] !== undefined) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Parses the name of the appropriate Amazon S3 bucket to source the
-     * original image from.
-     * @param {String} event - Lambda request body.
-     */
-    parseImageBucket(event) {
-        // Decode the image request
-        const decoded = this.decodeRequest(event);
-        if (decoded.bucket !== undefined) {
-            // Check the provided bucket against the whitelist
-            const sourceBuckets = this.getAllowedSourceBuckets();
-            if (sourceBuckets.includes(decoded.bucket)) {
-                return decoded.bucket;
-            } else {
-                throw new RequestExceptions.CannotAccessBucketException()
-            }
-        } else {
-            // Try to use the default image source bucket env var
-            const sourceBuckets = this.getAllowedSourceBuckets();
-            return sourceBuckets[0];
-        }
-    }
-
-    /**
-     * Determines whether a valid path is passed otherwise throws an error.
-     * @param {Object} event - Lambda request body.
-    */
-    isValidRequest(event) {
-        const path = event["path"];
-        // ----
-        const matchDefault = new RegExp(/^(\/?)([0-9a-zA-Z+\/]{4})*(([0-9a-zA-Z+\/]{2}==)|([0-9a-zA-Z+\/]{3}=))?$/);
-        const matchFavicon = new RegExp(/^(\/?)favicon\.ico$/);
-        // ----
-        if (matchDefault.test(path)) {
-            return 'Default';
-        } else if (matchFavicon.test(path)) {
-            // Always return 404 Not Found exception when request for
-            // favicon comes in.
-            throw new RequestExceptions.FileNotFoundException()
-        } else {
-            throw new RequestExceptions.RequestTypeException()
-        }
-    }
-
-    /**
-     * Decodes the base64-encoded image request path associated with default
-     * image requests. Provides error handling for invalid or undefined path values.
-     * @param {Object} event - The proxied request object.
-     */
-    decodeRequest(event) {
-        const path = event["path"];
-        if (path !== undefined) {
-            const splitPath = path.split("/");
-            const encoded = splitPath[splitPath.length - 1];
-            const toBuffer = Buffer.from(encoded, 'base64');
-            try {
-                return JSON.parse(toBuffer.toString('ascii'));
-            } catch (e) {
-                throw new DecodeExceptions.DecodeRequestException()
-            }
-        } else {
-            throw new DecodeExceptions.CannotReadBucketPathException()
-        }
-    }
-
-    /**
-     * Returns a formatted image source bucket whitelist as specified in the 
-     * SOURCE_BUCKETS environment variable of the image handler Lambda
-     * function. Provides error handling for missing/invalid values.
-     */
-    getAllowedSourceBuckets() {
-        const sourceBuckets = process.env.SOURCE_BUCKETS;
-        if (sourceBuckets === undefined) {
-            throw new RequestExceptions.NoSourceBucketException()
-        } else {
-            const formatted = sourceBuckets.replace(/\s+/g, '');
-            const buckets = formatted.split(',');
-            return buckets;
-        }
+        return returnFormat
     }
 }
 
 // Exports
-module.exports = ImageRequest;
+module.exports = ImageRequest

@@ -16,5 +16,15 @@ class ResizeNoDefaultException extends Error {
   }
 }
 
+class ResizeNoSizesAllowedException extends Error {
+  constructor (message) {
+    super()
+    this.status = 400,
+    this.name = 'Resize::NoSizesAllowed',
+    this.message = 'The ALLOWED_SIZES list is empty.'
+  }
+}
+
 module.exports.ResizeSizeNotAllowedException = ResizeSizeNotAllowedException
 module.exports.ResizeNoDefaultException = ResizeNoDefaultException
+module.exports.ResizeNoSizesAllowedException = ResizeNoSizesAllowedException
