@@ -41,6 +41,11 @@
             "Default" : 1,
             "Type" : "Number",
             "AllowedValues" : [ 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653 ]
+        },
+        "SecurityKey" : {
+            "Description" : "Salt for the security hash. When not empty all requests are checked for a valid hash.",
+            "Default" : "",
+            "Type" : "String"
         }
     },
     "Metadata": {
@@ -248,6 +253,9 @@
                         },
                         "DEFAULT_TO_FIRST_SIZE": {
                             "Ref" : "DefaultToFirstSize"
+                        },
+                        "SECURITY_KEY": {
+                            "Ref" : "SecurityKey"
                         }
                     }
                 }
@@ -400,6 +408,10 @@
         "LogRetentionPeriod" : {
             "Description" : "Number of days for event logs from Lambda to be retained in CloudWatch.",
             "Value" : { "Ref" : "LogRetentionPeriod" }
+        },
+        "SecurityKey" : { 
+            "Description" : "When not empty all requests are checked for a valid hash.",
+            "Value" : { "Ref" : "SecurityKey" }
         }
     }
 }
