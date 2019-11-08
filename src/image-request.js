@@ -35,8 +35,7 @@ class ImageRequest {
      * handler to perform image modifications.
      */
     async setup() {
-        const parserObj = new resizeParser()
-        this.edits = parserObj.checkResize(this.edits)
+        this.edits = resizeParser.checkResize(this.edits)
         
         this.originalImageObj = await this.getOriginalImage(this.bucket, this.key)
         this.originalImage = this.originalImageObj.Body

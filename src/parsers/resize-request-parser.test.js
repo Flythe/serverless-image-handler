@@ -4,10 +4,7 @@ const ResizeExceptions = require('../exceptions/ResizeExceptions')
 
 const resizeParser = require('./resize-request-parser')
 
-let resizeParserObj
-
 beforeEach(() => {
-    resizeParserObj = new resizeParser()
     process.env = {}
 })
 
@@ -26,7 +23,7 @@ describe('isAllowedResize()', () => {
         }
         const expectedResult = edits
         
-        expect(resizeParserObj.isAllowedResize(edits)).toEqual(expectedResult)
+        expect(resizeParser.isAllowedResize(edits)).toEqual(expectedResult)
     })
     test('002/disallowedResizeRequest', () => {
         process.env.ALLOWED_SIZES = '400x400'
@@ -39,7 +36,7 @@ describe('isAllowedResize()', () => {
         }
 
         expect(() => {
-            resizeParserObj.isAllowedResize(edits)
+            resizeParser.isAllowedResize(edits)
         }).toThrow(ResizeExceptions.ResizeSizeNotAllowedException)
     })
 })
@@ -59,7 +56,7 @@ describe('checkResize()', () => {
             }
         }
         
-        expect(resizeParserObj.checkResize(edits)).toEqual(edits)
+        expect(resizeParser.checkResize(edits)).toEqual(edits)
     })
     test('002/validResize', () => {
         process.env.DEFAULT_TO_FIRST_SIZE = 'No'
@@ -72,7 +69,7 @@ describe('checkResize()', () => {
             }
         }
 
-        expect(resizeParserObj.checkResize(edits)).toEqual(edits)
+        expect(resizeParser.checkResize(edits)).toEqual(edits)
     })
     test('003/invalidResize', () => {
         process.env.DEFAULT_TO_FIRST_SIZE = 'No'
@@ -86,7 +83,7 @@ describe('checkResize()', () => {
         }
 
         expect(() => {
-            resizeParserObj.checkResize(edits)
+            resizeParser.checkResize(edits)
         }).toThrow(ResizeExceptions.ResizeSizeNotAllowedException)
     })
     test('004/heightIsZero', () => {
@@ -105,7 +102,7 @@ describe('checkResize()', () => {
             }
         }
 
-        expect(resizeParserObj.checkResize(edits)).toEqual(expectedResult)
+        expect(resizeParser.checkResize(edits)).toEqual(expectedResult)
     })
     test('005/widthIsZero', () => {
         process.env.DEFAULT_TO_FIRST_SIZE = 'No'
@@ -123,7 +120,7 @@ describe('checkResize()', () => {
             }
         }
         
-        expect(resizeParserObj.checkResize(edits)).toEqual(expectedResult)
+        expect(resizeParser.checkResize(edits)).toEqual(expectedResult)
     })
     test('006/setToDefault', () => {
         process.env.DEFAULT_TO_FIRST_SIZE = 'Yes'
@@ -137,7 +134,7 @@ describe('checkResize()', () => {
             }
         }
         
-        expect(resizeParserObj.checkResize(edits)).toEqual(expectedResult)
+        expect(resizeParser.checkResize(edits)).toEqual(expectedResult)
     })
     test('007/noDefaultSet', () => { 
         process.env.DEFAULT_TO_FIRST_SIZE = 'No'
@@ -146,7 +143,7 @@ describe('checkResize()', () => {
         const edits = {}
 
         expect(() => {
-            resizeParserObj.checkResize(edits)
+            resizeParser.checkResize(edits)
         }).toThrow(ResizeExceptions.ResizeNoDefaultException)
     })
 })
@@ -158,7 +155,7 @@ describe('sizesRestricted()', () => {
     test('001/getRestriction', () => {
         process.env.ALLOWED_SIZES = '100x100'
 
-        expect(resizeParserObj.sizesRestricted()).toBe(true)
+        expect(resizeParser.sizesRestricted()).toBe(true)
     })
 })
 
@@ -172,11 +169,11 @@ describe('getAllowedSizes()', () => {
 
         const expectedResult = ['100x100', '200x200']
 
-        expect(resizeParserObj.getAllowedSizes()).toEqual(expectedResult)
+        expect(resizeParser.getAllowedSizes()).toEqual(expectedResult)
     })
     test('002/noSizesDefined', () => {
         expect(() => {
-            resizeParserObj.getAllowedSizes()
+            resizeParser.getAllowedSizes()
         }).toThrow(ResizeExceptions.ResizeNoSizesAllowedException)
     })
 })
@@ -193,19 +190,19 @@ describe('resizeInRequest()', () => {
             }
         }
 
-        expect(resizeParserObj.resizeInRequest(request)).toBe(true)
+        expect(resizeParser.resizeInRequest(request)).toBe(true)
     })
     test('002/noResizeInRequest', () => {
         const request = {}
 
-        expect(resizeParserObj.resizeInRequest(request)).toBe(false)
+        expect(resizeParser.resizeInRequest(request)).toBe(false)
     })
     test('003/emptyResizeInRequest', () => {
         const request = {
             resize: {}
         }
 
-        expect(resizeParserObj.resizeInRequest(request)).toBe(false)
+        expect(resizeParser.resizeInRequest(request)).toBe(false)
     })
 })
 
@@ -228,13 +225,13 @@ describe('addSizeToRequest()', () => {
             }
         }
 
-        expect(resizeParserObj.addSizeToRequest(request)).toEqual(expectedResult)
+        expect(resizeParser.addSizeToRequest(request)).toEqual(expectedResult)
     })
     test('002/noDefaultSizeDefined', () => {
         const request = {}
 
         expect(() => {
-            resizeParserObj.addSizeToRequest(request)
+            resizeParser.addSizeToRequest(request)
         }).toThrow(ResizeExceptions.ResizeNoDefaultException)
     })
 })
