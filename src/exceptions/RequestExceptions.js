@@ -7,12 +7,12 @@ class RequestTypeException extends Error {
     }
 }
 
-class FileNotFoundException extends Error {
-    constructor (message) {
+class NotFoundException extends Error {
+    constructor (code, message) {
         super()
         this.status = 404,
-        this.code = 'Not Found',
-        this.message = ''
+        this.code = code,
+        this.message = message
     }
 }
 
@@ -53,7 +53,7 @@ class HashException extends Error {
 }
 
 module.exports.RequestTypeException = RequestTypeException
-module.exports.FileNotFoundException = FileNotFoundException
+module.exports.NotFoundException = NotFoundException
 module.exports.CannotAccessBucketException = CannotAccessBucketException
 module.exports.NoSourceBucketException = NoSourceBucketException
 module.exports.NoSecurityHash = NoSecurityHash

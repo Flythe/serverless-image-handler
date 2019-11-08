@@ -67,7 +67,7 @@ describe('isValid()', () => {
 
         expect(() => {
             requestParser.isValid(event)
-        }).toThrow(RequestExceptions.FileNotFoundException)
+        }).toThrow(RequestExceptions.NotFoundException('Not Found', ''))
     })
     test('003/elseCondition', () => { 
         const event = { path: 'invalidPath' }

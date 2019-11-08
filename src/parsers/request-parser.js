@@ -84,7 +84,7 @@ exports.isValid = (event) => {
     } else if (matchFavicon.test(path)) {
         // Always return 404 Not Found exception when request for
         // favicon comes in.
-        throw new RequestExceptions.FileNotFoundException()
+        throw new RequestExceptions.NotFoundException('Not Found', '')
     }
 
     throw new RequestExceptions.RequestTypeException()

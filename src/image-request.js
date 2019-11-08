@@ -1,6 +1,7 @@
 const AWS = require('aws-sdk')
 const sharp = require('sharp')
 
+const RequestExceptions = require('./exceptions/RequestExceptions')
 const parser = require('./parsers/request-parser')
 const resizeParser = require('./parsers/resize-request-parser')
 const utils = require('./helpers/utils')
@@ -63,12 +64,9 @@ class ImageRequest {
 
             return Promise.resolve(originalImage)
         } catch(err) {
-            const error = new Error({
-                status: 404,
-                code: err.code,
-                message: err.message
-            })
-            return Promise.reject(error)
+            return Promise.reject(
+                new RequestExceptions.NotFoundException(err.code, err.message)
+            )
         }
     }
 
