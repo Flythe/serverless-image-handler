@@ -15,9 +15,11 @@ class ImageRequest {
 
         parser.isValid(event)
 
-        this.request = parser.decodeRequest(event)
+        const { hash, request } = parser.decodeRequest(event)
 
-        parser.isSecure(this.request)
+        this.request = request
+
+        parser.isSecure(this.request, hash)
 
         this.bucket = parser.parseBucket(this.request.bucket)
 

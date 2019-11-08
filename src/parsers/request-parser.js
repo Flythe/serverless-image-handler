@@ -45,6 +45,22 @@ exports.parseBucket = (requestedBucket) => {
 }
 
 /**
+ * Retrieves the hash from the query string parameters if present
+ * @param {Object} event - The Lambda request body
+ */
+exports.getHash = (event) => {
+    const queryParams = event['multiValueQueryStringParameters']
+    
+    if (queryParams === undefined || !Object.keys(queryParams).includes('hash')) {
+        return false
+    }
+
+    const hash = queryParams.hash[0]
+
+    return hash
+}
+
+/**
  * Decodes the base64-encoded image request path. Provides error handling 
  * for invalid or undefined path values.
  * @param {Object} event - The Lambda request body.
@@ -59,8 +75,15 @@ exports.decodeRequest = (event) => {
 
         const toBuffer = Buffer.from(path, 'base64')
 
+        const hash = this.getHash(event)
+
         try {
-            return JSON.parse(toBuffer.toString('ascii'))
+            const decodedPath = JSON.parse(toBuffer.toString('ascii'))
+
+            return {
+                hash: hash,
+                request: decodedPath
+            }
         } catch (e) {
             throw new DecodeExceptions.DecodeRequestException()
         }
@@ -90,18 +113,18 @@ exports.isValid = (event) => {
     throw new RequestExceptions.RequestTypeException()
 }
 
-exports.isSecure = (request) => {
+exports.isSecure = (request, hash) => {
     const needsCheck = utils.externalVariableIsSet('SECURITY_KEY')
     
     if (!needsCheck) {
         return true
     }
 
-    if (request.hash === undefined) {
+    if (hash === false) {
         throw new RequestExceptions.NoSecurityHash()
     }
 
-    const isValid = security.verifyHash(request.key, request.edits, request.hash)
+    const isValid = security.verifyHash(request.key, request.edits, hash)
 
     if (!isValid) {
         throw new RequestExceptions.HashException()

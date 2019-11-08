@@ -54,6 +54,28 @@ describe('parseBucket()', () => {
 })
 
 // ----------------------------------------------------------------------------
+// getHash()
+// ----------------------------------------------------------------------------
+describe('getHash()', () => {
+    test('001/hashInQueryParameter', () => {
+        event = {
+            multiValueQueryStringParameters: {
+                hash: ['hash']
+            }
+        }
+
+        expect(requestParser.getHash(event)).toBe('hash')
+    })
+    test('002/noHashInQueryParameter', () => {
+        event = {
+            multiValueQueryStringParameters: {}
+        }
+
+        expect(requestParser.getHash(event)).toBe(false)
+    })
+})
+
+// ----------------------------------------------------------------------------
 // isValid()
 // ----------------------------------------------------------------------------
 describe('isValid()', () => {
@@ -67,7 +89,7 @@ describe('isValid()', () => {
 
         expect(() => {
             requestParser.isValid(event)
-        }).toThrow(RequestExceptions.NotFoundException('Not Found', ''))
+        }).toThrow(new RequestExceptions.NotFoundException('Not Found', ''))
     })
     test('003/elseCondition', () => { 
         const event = { path: 'invalidPath' }
@@ -85,9 +107,12 @@ describe('decodeRequest()', () => {
     test('001/validRequestPathSpecified', () => {
         const event = { path: getPath({}) }
         const expectedResult = {
-            bucket: 'validBucket',
-            key: 'validKey',
-            edits: {}
+            hash: false,
+            request: {
+                bucket: 'validBucket',
+                key: 'validKey',
+                edits: {}
+            }
         }
 
         expect(requestParser.decodeRequest(event)).toEqual(expectedResult)
@@ -143,7 +168,7 @@ describe('isSecure()', () => {
         process.env.SECURITY_KEY = 'validSecurityKey'
 
         expect(() => {
-            requestParser.isSecure({})
+            requestParser.isSecure({}, false)
         }).toThrow(RequestExceptions.NoSecurityHash)
     })
     test('003/withSecurity/withHash', () => { 
@@ -157,11 +182,10 @@ describe('isSecure()', () => {
 
         const request = {
             key: imageKey,
-            edits: edits,
-            hash: hash
+            edits: edits
         }
         
-        expect(requestParser.isSecure(request)).toBe(true)
+        expect(requestParser.isSecure(request, hash)).toBe(true)
     })
     test('003/withSecurity/withInvalidHash', () => { 
         process.env.SECURITY_KEY = 'validSecurityKey'
@@ -174,12 +198,11 @@ describe('isSecure()', () => {
 
         const request = {
             key: imageKey,
-            edits: edits,
-            hash: hash
+            edits: edits
         }
 
         expect(() => {
-            requestParser.isSecure(request)
+            requestParser.isSecure(request, hash)
         }).toThrow(RequestExceptions.HashException)
     })
 })
