@@ -1,11 +1,11 @@
 
 # AWS Serverless Image Handler Lambda wrapper for SharpJS
 A solution to dynamically handle images on the fly, utilising [Sharp](https://sharp.pixelplumbing.com/en/stable/).
-To deploy a version without any customisation there is a ready to use version, additional details and documentation are available [here]( https://aws.amazon.com/solutions/serverless-image-handler/).
+To deploy a version without any customisation there is a ready to use version, additional details and documentation are available [here](https://aws.amazon.com/solutions/serverless-image-handler/).
 
 The original repo can be found [here](https://github.com/awslabs/serverless-image-handler). The documentation and readme of the original repos is really minimal so I've attempted a restructure below.
 
-The Amazon CloudFormation template has been heavily modified as well to remove a bunch of unused services that were being installed. At the moment this template will set up: a CloudFront, API Gateway, and a single Lambda function.
+The Amazon CloudFormation template has been heavily modified as well to remove a bunch of unused services that were being installed. At the moment this template will set up: CloudFront, API Gateway, and a single Lambda function.
 
 ## Prerequisites
 To deploy the script you need two Amazon S3 buckets. One bucket will contain the code distributable and the CloudFormation template. The other will contain the images that will be served.
@@ -77,15 +77,11 @@ https://my-cloud-front.cloudfront.net/eyJidWNrZXQiOiJteS1idWNrZXQiLCAia2V5Ijoic2
 
 # Customisation
 * Clone this repo
+* Copy the example setting files and fill out the placeholders
 * Install the vagrant box, it pre-installs all the necessary libraries
 ```bash
 vagrant up
 vagrant ssh
-```
-
-* Configure the AWS CLI
-```bash
-aws configure
 ```
 
 * Make the desired code changes
@@ -95,4 +91,5 @@ cd ./source
 npm test
 ```
 
-* Test your code by deploying the CloudFormation stack, see [installation notes](#installation).
+* Test your code by running `sudo serverless offline`, serverless will create an endpoint at localhost:8080 on your host machine, see [basic usage](#basic-usage) on how to interact with the image handler
+* Deploy the CloudFormation stack! see [installation notes](#installation)
