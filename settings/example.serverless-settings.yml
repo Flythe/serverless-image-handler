@@ -3,19 +3,16 @@ defaults: &defaults
   offlinePort: 8080
   region: 'us-east-1'
   environment: &defaults.environment
-    DEFAULT_QUALITY: 75
-    DEFAULT_COMPRESS_QUALITY: 45
+    ALLOWED_SIZES: '642x0,100x100,200x200,800x800,1600x0'
+    DEFAULT_TO_FIRST_SIZE: 'Yes'
+    AUTO_WEBP: 'Yes'
+    CORS_ENABLED: 'No'
+    CORS_ORIGIN: '*'
 
 stages:
   dev:
     <<: *defaults
     environment:
       <<: *defaults.environment
-      SOURCE_BUCKET: 'bucket-name'
-      AUTO_WEBP: 'Yes'
-      CORS_ENABLED: 'No'
-      CORS_ORIGIN: '*'
       SOURCE_BUCKETS: 'bucket-name'
-      ALLOWED_SIZES: '642x0,100x100,200x200,800x800,1600x0'
-      DEFAULT_TO_FIRST_SIZE: 'Yes'
       SECURITY_KEY: ''
