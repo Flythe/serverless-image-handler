@@ -302,23 +302,32 @@
                     "Statement": [
                         {
                             "Effect": "Allow",
+                            "Action": "logs:CreateLogGroup",
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": "logs:PutRetentionPolicy",
+                            "Resource": "arn:aws:logs:*:*:log-group:/aws/lambda/*"
+                        },
+                        {
+                            "Effect": "Allow",
                             "Action": [
                                 "logs:CreateLogStream",
-                                "logs:CreateLogGroup",
                                 "logs:PutLogEvents"
                             ],
                             "Resource": { "Fn::Sub": "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/*" }
                         },
                         {
                             "Effect": "Allow",
-                            "Action": [
-                                "s3:GetObject",
-                                "s3:ListBucket"
-                            ],
-                            "Resource": [
-                                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "SourceBucket" } ] ] }
-                            ]
-                        } 
+                            "Action": "s3:ListBucket",
+                            "Resource": { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "SourceBucket" } ] ] }
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": "s3:GetObject",
+                            "Resource": { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "SourceBucket" }, "/*" ] ] }
+                        }
                     ]
                 },
                 "PolicyName" : { "Fn::Join": [ "", [ { "Ref": "AWS::StackName" }, "ImageHandlerPolicy" ] ] },
