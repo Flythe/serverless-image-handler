@@ -104,8 +104,8 @@
                         "AllowedMethods": [ "GET", "HEAD" ],
                         "TargetOriginId": { "Fn::Sub": "${ImageHandlerApi}" },
                         "ForwardedValues": {
-                            "QueryString": false,
-                            "Headers": [ "Origin", "Accept" ],
+                            "QueryString": true,
+                            "Headers": [ "Accept" ],
                             "Cookies": { "Forward": "none" }
                         },
                         "ViewerProtocolPolicy": "https-only"

@@ -51,7 +51,7 @@ exports.parseBucket = (requestedBucket) => {
 exports.getHash = (event) => {
     const queryParams = event['multiValueQueryStringParameters']
     
-    if (queryParams === undefined || !Object.keys(queryParams).includes('hash')) {
+    if (queryParams === undefined || queryParams === null || !Object.keys(queryParams).includes('hash')) {
         return false
     }
 
