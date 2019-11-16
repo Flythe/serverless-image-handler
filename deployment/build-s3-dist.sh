@@ -2,18 +2,19 @@
 # param 2: version number
 # (optional) param 3: lambda function name OR stack name
 # (optional) param 4: when creating a stack this is the source S3 bucket for the images
-# (optional) param 5: when createing a stack this is the security key
+# (optional) param 5: when creating a stack this is the security key
 
 echo "------------------------------------------------------------------------------"
-echo "Setup the dist folder"
+echo "Package the image-handler code"
 echo "------------------------------------------------------------------------------"
-rm -r dist
-mkdir dist
+cd ..
+npm run build
+
 
 echo "------------------------------------------------------------------------------"
 echo "Copy in the template"
 echo "------------------------------------------------------------------------------"
-cp *.template dist/
+cp deployment/*.template dist/
 
 replace="s/%%BUCKET_NAME%%/$1/g"
 sed -i -e $replace dist/*.template
@@ -21,21 +22,12 @@ sed -i -e $replace dist/*.template
 replace="s/%%VERSION%%/$2/g"
 sed -i -e $replace dist/*.template
 
-cd ../source
-
-echo "------------------------------------------------------------------------------"
-echo "Package the image-handler code"
-echo "------------------------------------------------------------------------------"
-npm install
-npm run build
-cp dist/image-handler.zip ../deployment/dist/image-handler.zip
-
-cd ../deployment
 
 echo "------------------------------------------------------------------------------"
 echo "Upload to S3 bucket"
 echo "------------------------------------------------------------------------------"
 aws s3 cp ./dist/ s3://$1/$2/ --recursive
+
 
 ## Uncomment if you want to create a stack automatically
 # echo "------------------------------------------------------------------------------"

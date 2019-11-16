@@ -24,7 +24,7 @@
   "scripts": {
     "test": "jest --coverage",
     "build:init": "rm -rf package-lock.json && rm -rf dist && rm -rf node_modules",
-    "build:zip": "zip -rq image-handler.zip . -x template.yml",
+    "build:zip": "cd src/ && zip -rq ../image-handler.zip . -x *.test.js */*.test.js && cd .. && zip -rqu image-handler.zip node_modules/ package.json package-lock.json",
     "build:dist": "mkdir dist && mv image-handler.zip dist/",
     "build": "npm run build:init && npm install --production && npm run build:zip && npm run build:dist"
   }
