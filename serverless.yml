@@ -6,7 +6,7 @@ provider:
   stage: ${opt:stage,'dev'}
   iamRoleStatements:
     - Effect: "Allow"
-      Resource: "arn:aws:s3:::${self:custom.settings.environment.SOURCE_BUCKETS}/*"
+      Resource: "arn:aws:s3:::${self:custom.settings.environment.SOURCE_BUCKET}"
 
 resources:
   Resources:

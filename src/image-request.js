@@ -21,8 +21,6 @@ class ImageRequest {
 
         parser.isSecure(this.request, hash)
 
-        this.bucket = parser.parseBucket(this.request.bucket)
-
         this.key = this.request.key
         this.edits = this.request.edits
 
@@ -37,7 +35,7 @@ class ImageRequest {
     async setup() {
         this.edits = resizeParser.checkResize(this.edits)
         
-        this.originalImageObj = await this.getOriginalImage(this.bucket, this.key)
+        this.originalImageObj = await this.getOriginalImage(this.key)
         this.originalImage = this.originalImageObj.Body
 
         const requiredFormat = this.getOutputFormat(this.headers, this.requestFormat)
@@ -52,11 +50,12 @@ class ImageRequest {
 
     /**
      * Gets the original image from an Amazon S3 bucket.
-     * @param {String} bucket - Requested bucket name.
      * @param {String} key - Requested file key.
      * @return {Promise} - The original image or an error.
      */
-    async getOriginalImage(bucket, key) {
+    async getOriginalImage(key) {
+        const bucket = process.env.SOURCE_BUCKET
+        
         const s3 = new AWS.S3()
         const imageLocation = { Bucket: bucket, Key: key }
 

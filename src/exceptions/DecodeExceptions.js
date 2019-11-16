@@ -7,14 +7,4 @@ class DecodeRequestException extends Error {
     }
 }
 
-class CannotReadBucketPathException extends Error {
-    constructor (message) {
-        super()
-        this.status = 400,
-        this.code = 'DecodeRequest::CannotReadPath',
-        this.message = 'The URL path you provided could not be read. Please ensure that it is properly formed according to the solution documentation.'
-    }
-}
-
 module.exports.DecodeRequestException = DecodeRequestException
-module.exports.CannotReadBucketPathException = CannotReadBucketPathException

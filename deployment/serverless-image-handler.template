@@ -30,9 +30,9 @@
             "Default" : "*",
             "Type" : "String"
         },
-        "SourceBuckets" : {
+        "SourceBucket" : {
             "Description" : "(Required) List the buckets (comma-separated) within your account that contain original image files.",
-            "Default" : "defaultBucket, bucketNo2, bucketNo3, ...",
+            "Default" : "defaultBucket",
             "Type" : "String",
             "AllowedPattern" : ".+"
         },
@@ -57,7 +57,7 @@
                 },
                 {
                     "Label": { "default": "Image Sources" },
-                    "Parameters": [ "SourceBuckets" ]
+                    "Parameters": [ "SourceBucket" ]
                 },
                 {
                     "Label": { "default": "Event Logging" },
@@ -245,8 +245,8 @@
                         "CORS_ORIGIN" : { 
                             "Ref" : "CorsOrigin" 
                         },
-                        "SOURCE_BUCKETS" : {
-                            "Ref" : "SourceBuckets"
+                        "SOURCE_BUCKET" : {
+                            "Ref" : "SourceBucket"
                         },
                         "ALLOWED_SIZES": {
                             "Ref" : "AllowedSizes"
@@ -313,11 +313,10 @@
                             "Effect": "Allow",
                             "Action": [
                                 "s3:GetObject",
-                                "s3:PutObject",
                                 "s3:ListBucket"
                             ],
                             "Resource": [
-                                "arn:aws:s3:::*"
+                                { "Fn::Join": [ "", [ "arn:aws:s3:::", { "Ref": "SourceBucket" } ] ] }
                             ]
                         } 
                     ]
@@ -380,9 +379,9 @@
             "Description" : "Link to API endpoint for sending image requests to.",
             "Value" : { "Fn::Sub" : "https://${ImageHandlerDistribution.DomainName}" }
         },
-        "SourceBuckets" : {
+        "SourceBucket" : {
             "Description" : "Amazon S3 bucket location containing original image files.",
-            "Value" : { "Ref" : "SourceBuckets" }
+            "Value" : { "Ref" : "SourceBucket" }
         },
         "AllowedSizes" : {
             "Description" : "Sizes in pixels that are allowed to be requested through the API.",

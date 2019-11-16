@@ -26,34 +26,6 @@ beforeEach(() => {
 })
 
 // ----------------------------------------------------------------------------
-// parseBucket()
-// ----------------------------------------------------------------------------
-describe('parseBucket()', () => {
-    test('001/bucketSpecifiedInRequest/allowed', () => {
-        process.env.SOURCE_BUCKETS = 'validBucket, validBucket2'
-
-        expect(requestParser.parseBucket('validBucket')).toBe('validBucket')
-    })
-    test('002/bucketSpecifiedInRequest/notAllowed', () => {
-        process.env.SOURCE_BUCKETS = 'invalidBucket, invalidBucket2'
-      
-        expect(() => {
-            requestParser.parseBucket('validBucket')
-        }).toThrow(RequestExceptions.CannotAccessBucketException)
-    })
-    test('003/bucketNotSpecifiedInRequest', () => {
-        process.env.SOURCE_BUCKETS = 'validBucket, validBucket2'
-
-        expect(requestParser.parseBucket()).toBe('validBucket')
-    })
-    test('004/noSourceBuckets', () => {
-        expect(() => {
-            requestParser.parseBucket()
-        }).toThrow(RequestExceptions.NoSourceBucketException)
-    })
-})
-
-// ----------------------------------------------------------------------------
 // getHash()
 // ----------------------------------------------------------------------------
 describe('getHash()', () => {
@@ -132,26 +104,6 @@ describe('decodeRequest()', () => {
         expect(() => {
             requestParser.decodeRequest(event)
         }).toThrow(DecodeExceptions.CannotReadBucketPathException)
-    })
-})
-
-// ----------------------------------------------------------------------------
-// getAllowedSourceBuckets()
-// ----------------------------------------------------------------------------
-describe('getAllowedSourceBuckets()', () => {
-    test('001/sourceBucketsSpecified', () => {
-        process.env.SOURCE_BUCKETS = 'validBucket, validBucket2'
-        
-        const expectedResult = ['validBucket', 'validBucket2']
-        
-        expect(requestParser.getAllowedSourceBuckets()).toEqual(expectedResult)
-    })
-    test('002/noSourceBucketsSpecified', () => { 
-        process.env = {}
-        
-        expect(() => {
-            requestParser.getAllowedSourceBuckets()
-        }).toThrow(RequestExceptions.NoSourceBucketException)
     })
 })
 

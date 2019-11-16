@@ -16,24 +16,6 @@ class NotFoundException extends Error {
     }
 }
 
-class CannotAccessBucketException extends Error {
-    constructor (message) {
-        super()
-        this.status = 403,
-        this.code = 'Request::CannotAccessBucket',
-        this.message = 'The bucket you specified could not be accessed. Please check that the bucket is specified in your SOURCE_BUCKETS.'
-    }
-}
-
-class NoSourceBucketException extends Error {
-    constructor (message) {
-        super()
-        this.status = 400,
-        this.code = 'Request::NoSourceBuckets',
-        this.message = 'The SOURCE_BUCKETS variable could not be read. Please check that it is not empty and contains at least one source bucket, or multiple buckets separated by commas. Spaces can be provided between commas and bucket names, these will be automatically parsed out when decoding.'
-    }
-}
-
 class NoSecurityHash extends Error {
     constructor (message) {
         super()
@@ -54,7 +36,5 @@ class HashException extends Error {
 
 module.exports.RequestTypeException = RequestTypeException
 module.exports.NotFoundException = NotFoundException
-module.exports.CannotAccessBucketException = CannotAccessBucketException
-module.exports.NoSourceBucketException = NoSourceBucketException
 module.exports.NoSecurityHash = NoSecurityHash
 module.exports.HashException = HashException

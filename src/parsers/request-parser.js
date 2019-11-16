@@ -5,46 +5,6 @@ const utils = require('../helpers/utils')
 const security = require('../helpers/security')
 
 /**
- * Returns a formatted image source bucket whitelist as specified in the 
- * SOURCE_BUCKETS environment variable of the image handler Lambda
- * function. Provides error handling for missing/invalid values.
- */
-exports.getAllowedSourceBuckets = () => {
-    const sourceBuckets = process.env.SOURCE_BUCKETS
-
-    if (sourceBuckets === undefined) {
-        throw new RequestExceptions.NoSourceBucketException()
-    }
-
-    const formatted = sourceBuckets.replace(/\s+/g, '')
-    const buckets = formatted.split(',')
-    
-    return buckets
-}
-
-/**
- * Parses the name of the appropriate Amazon S3 bucket to source the
- * original image from.
- * @param {String} requestedBucket - The bucket defined in the request.
- */
-exports.parseBucket = (requestedBucket) => {
-    // Decode the image request
-    const sourceBuckets = this.getAllowedSourceBuckets()
-
-    if (requestedBucket !== undefined) {
-        if (sourceBuckets.includes(requestedBucket)) {
-            return requestedBucket
-        } else {
-            // Requested bucket is not in the allowed bucket list
-            throw new RequestExceptions.CannotAccessBucketException()
-        }
-    }
-
-    // Use the default source bucket
-    return sourceBuckets[0]
-}
-
-/**
  * Retrieves the hash from the query string parameters if present
  * @param {Object} event - The Lambda request body
  */

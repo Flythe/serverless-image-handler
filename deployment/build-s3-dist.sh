@@ -37,7 +37,7 @@ aws s3 cp ./dist/ s3://$1/$2/ --recursive
 #     --stack-name $3 \
 #     --capabilities CAPABILITY_NAMED_IAM\
 #     --template-url https://s3.amazonaws.com/$1/$2/serverless-image-handler.template \
-#     --parameters ParameterKey=SourceBuckets,ParameterValue=$4 ParameterKey=SecurityKey,ParameterValue=$5
+#     --parameters ParameterKey=SourceBucket,ParameterValue=$4 ParameterKey=SecurityKey,ParameterValue=$5
 
 ## Uncomment if you want to publish code directly to your lambda function
 # echo "------------------------------------------------------------------------------"
