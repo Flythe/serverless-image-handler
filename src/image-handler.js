@@ -97,7 +97,7 @@ class ImageHandler {
 
         for (const [key, value] of Object.entries(edits)) {
             if (key === 'composite') {
-                let overlay = await this.getOverlayImage(value.bucket, value.key)
+                let overlay = await this.getOverlayImage(value.key)
                 let metadata = await image.metadata()
 
                 if (keys.includes('resize')) {
@@ -120,11 +120,12 @@ class ImageHandler {
     /**
      * Gets an image to be used as an overlay to the primary image from an
      * Amazon S3 bucket.
-     * @param {String} bucket - The name of the bucket containing the overlay.
      * @param {String} key - The keyname corresponding to the overlay.
      * @return {Object} - The original image object.
      */
-    async getOverlayImage(bucket, key) {
+    async getOverlayImage(key) {
+        const bucket = process.env.SOURCE_BUCKET
+
         const s3 = new AWS.S3()
         const params = { Bucket: bucket, Key: key }
         
