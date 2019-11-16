@@ -142,10 +142,7 @@ describe('getOriginalImage()', () => {
     test('002/imageDoesNotExist', () => {
         mockS3GetObject.mockImplementation((params) => {
             return {
-                promise() { return Promise.reject({
-                    code: 500,
-                    message: 'SimulatedInvalidParameterException'
-                }) }
+                promise() { return Promise.reject(new Error('SimulatedInvalidParameterException')) }
             }
         })
 
@@ -154,7 +151,7 @@ describe('getOriginalImage()', () => {
 
         expect(imageRequest.getOriginalImage('invalidBucket', 'invalidKey'))
             .rejects
-            .toThrow(Error)
+            .toEqual(new Error('SimulatedInvalidParameterException'))
     })
 })
 
