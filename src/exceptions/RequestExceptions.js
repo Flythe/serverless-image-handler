@@ -7,6 +7,15 @@ class RequestTypeException extends Error {
     }
 }
 
+class EmptyException extends Error {
+    constructor (status, code, message) {
+        super()
+        this.status = status,
+        this.code = code,
+        this.message = message
+    }
+}
+
 class NotFoundException extends Error {
     constructor (code, message) {
         super()
@@ -53,6 +62,7 @@ class HashException extends Error {
 }
 
 module.exports.RequestTypeException = RequestTypeException
+module.exports.EmptyException = EmptyException
 module.exports.NotFoundException = NotFoundException
 module.exports.CannotAccessBucketException = CannotAccessBucketException
 module.exports.NoSourceBucketException = NoSourceBucketException

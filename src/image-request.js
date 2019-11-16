@@ -65,8 +65,9 @@ class ImageRequest {
 
             return Promise.resolve(originalImage)
         } catch(err) {
+            // Rethrow to clean up the error
             return Promise.reject(
-                new RequestExceptions.NotFoundException(err.code, err.message)
+                new RequestExceptions.EmptyException(err.status, err.code, err.message)
             )
         }
     }
