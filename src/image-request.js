@@ -13,9 +13,9 @@ class ImageRequest {
     constructor (event) {
         this.event = event
 
-        parser.isValid(event)
+        const requestType = parser.isValid(event)
 
-        const { hash, request } = parser.decodeRequest(event)
+        const { hash, request } = parser.decodeRequest(event, requestType)
 
         this.request = request
 

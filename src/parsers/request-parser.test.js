@@ -5,7 +5,7 @@ const DecodeExceptions = require('../exceptions/DecodeExceptions')
 
 const requestParser = require('./request-parser')
 
-getPath = (edits, hash) => {
+getPath = (edits, hash, json) => {
     const defaultObj = {
         bucket: 'validBucket',
         key: 'validKey',
@@ -17,6 +17,10 @@ getPath = (edits, hash) => {
     }
 
     const jsonStr = JSON.stringify(defaultObj)
+
+    if (json === true) {
+        return jsonStr
+    }
 
     return btoa(jsonStr)
 }
@@ -54,16 +58,21 @@ describe('isValid()', () => {
     test('001/defaultRequestType', () => {
         const event = { path: getPath({ grayscale: true }) }
         
-        expect(requestParser.isValid(event)).toBe(true)
+        expect(requestParser.isValid(event)).toBe('base64')
     })
-    test('002/faviconRequest', () => {
+    test('002/jsonRequestType', () => {
+        const event = { path: getPath({grayscale: true}, undefined, true) }
+
+        expect(requestParser.isValid(event)).toBe('json')
+    })
+    test('003/faviconRequest', () => {
         const event = { path: '/favicon.ico' }
 
         expect(() => {
             requestParser.isValid(event)
         }).toThrow(new RequestExceptions.NotFoundException('Not Found', ''))
     })
-    test('003/elseCondition', () => { 
+    test('004/elseCondition', () => { 
         const event = { path: 'invalidPath' }
         
         expect(() => {
@@ -77,7 +86,7 @@ describe('isValid()', () => {
 // ----------------------------------------------------------------------------
 describe('decodeRequest()', () => {
     test('001/validRequestPathSpecified', () => {
-        const event = { path: getPath({}) }
+        const event = { path: '/' + getPath({}) }
         const expectedResult = {
             hash: false,
             request: {
@@ -87,7 +96,20 @@ describe('decodeRequest()', () => {
             }
         }
 
-        expect(requestParser.decodeRequest(event)).toEqual(expectedResult)
+        expect(requestParser.decodeRequest(event, 'base64')).toEqual(expectedResult)
+    })
+    test('002/validJsonRequestPathSpecified', () => {
+        const event = { path: getPath({}, undefined, true) }
+        const expectedResult = {
+            hash: false,
+            request: {
+                bucket: 'validBucket',
+                key: 'validKey',
+                edits: {}
+            }
+        }
+
+        expect(requestParser.decodeRequest(event, 'json')).toEqual(expectedResult)  
     })
     test('002/invalidRequestPathSpecified', () => {
         const event = {
@@ -95,14 +117,14 @@ describe('decodeRequest()', () => {
         }
         
         expect(() => {
-            requestParser.decodeRequest(event)
+            requestParser.decodeRequest(event, 'base64')
         }).toThrow(DecodeExceptions.DecodeRequestException)
     })
     test('003/noPathSpecified', () => {
         const event = {}
         
         expect(() => {
-            requestParser.decodeRequest(event)
+            requestParser.decodeRequest(event, 'base64')
         }).toThrow(DecodeExceptions.CannotReadBucketPathException)
     })
 })
