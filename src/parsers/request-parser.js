@@ -65,20 +65,26 @@ exports.getHash = (event) => {
  * for invalid or undefined path values.
  * @param {Object} event - The Lambda request body.
  */
-exports.decodeRequest = (event) => {
+exports.decodeRequest = (event, requestType) => {
     let path = event['path']
-    
+
     if (path !== undefined) {
+        let pathStr = ''
+
         if (path.startsWith('/')) {
             path = path.substr(1)
         }
 
-        const toBuffer = Buffer.from(path, 'base64')
+        if (requestType === 'base64') {
+            pathStr = Buffer.from(path, 'base64').toString('ascii')
+        } else if (requestType === 'json') {
+            pathStr = decodeURIComponent(path)
+        }
 
         const hash = this.getHash(event)
 
         try {
-            const decodedPath = JSON.parse(toBuffer.toString('ascii'))
+            const decodedPath = JSON.parse(pathStr)
 
             return {
                 hash: hash,
@@ -98,12 +104,15 @@ exports.decodeRequest = (event) => {
 */
 exports.isValid = (event) => {
     const path = event['path']
-    
+
     const matchDefault = new RegExp(/^(\/?)([0-9a-zA-Z+\/]{4})*(([0-9a-zA-Z+\/]{2}==)|([0-9a-zA-Z+\/]{3}=))?$/)
+    const matchJson = new RegExp(/(\{.*\:)?\{.*\:.*\}(\})?/g)
     const matchFavicon = new RegExp(/^(\/?)favicon\.ico$/)
     
     if (matchDefault.test(path)) {
-        return true
+        return 'base64'
+    } else if (matchJson.test(decodeURIComponent(path))) {
+        return 'json'
     } else if (matchFavicon.test(path)) {
         // Always return 404 Not Found exception when request for
         // favicon comes in.
