@@ -3,8 +3,8 @@
     "Description": "(SO0023) - Serverless Image Handler: This template deploys and configures a serverless architecture that is optimized for dynamic image manipulation and delivery at low latency and cost. Leverages SharpJS for image processing. Template version 4.",
     "Parameters": {
         "AllowedSizes": {
-            "Description" : "Which sizes do you want to allow for the resizing functions, seperate with comma's",
-            "Default" : "642x0,100x100,200x200,800x800,1600x0",
+            "Description" : "Which sizes do you want to allow for the resizing functions, separate with comma's",
+            "Default" : "20x0,642x0,100x100,200x200,800x800,1600x0",
             "Type" : "String"
         },
         "DefaultToFirstSize": {
@@ -231,7 +231,7 @@
                     "S3Bucket" : { "Fn::FindInMap": [ "SourceCode", "General", "S3Bucket" ]},
                     "S3Key" : { "Fn::Join": [ "/", [ { "Fn::FindInMap": [ "SourceCode", "General", "KeyPrefix" ]}, "image-handler.zip" ]]}
                 },
-                "Runtime": "nodejs10.x",
+                "Runtime": "nodejs14.x",
                 "MemorySize": 1024,
                 "Timeout": 30,
                 "Environment" : {

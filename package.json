@@ -9,21 +9,20 @@
   "private": true,
   "license": "ISC",
   "dependencies": {
-    "sharp": "^0.23.1"
+    "sharp": "^0.30.1"
   },
   "devDependencies": {
-    "aws-sdk": "^2.437.0",
-    "aws-sdk-mock": "^4.4.0",
+    "aws-sdk": "^2.1073.0",
+    "aws-sdk-mock": "^5.6.2",
     "btoa": "^1.2.1",
     "jest": "^24.9.0",
-    "serverless": "^1.49.0",
+    "serverless": "^3.2.0",
     "serverless-apigw-binary": "^0.4.4",
-    "serverless-apigwy-binary": "^1.0.0",
-    "serverless-offline": "^5.7.3"
+    "serverless-offline": "^8.4.0"
   },
   "scripts": {
     "test": "jest --coverage",
-    "build:init": "rm -rf package-lock.json && rm -rf dist && rm -rf node_modules",
+    "build:init": "rm -rf package-lock.json && rm -rf dist && rm -rf node_modules/* && rm -rf yarn-error.log && rm -rf yarn.lock",
     "build:zip": "cd src/ && zip -rq ../image-handler.zip . -x *.test.js */*.test.js && cd .. && zip -rqu image-handler.zip node_modules/ package.json package-lock.json",
     "build:dist": "mkdir dist && mv image-handler.zip dist/",
     "build": "npm run build:init && npm install --production && npm run build:zip && npm run build:dist"

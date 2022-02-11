@@ -6,14 +6,15 @@ require 'yaml'
 settings = YAML.load_file 'settings/vagrant.yml'
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/trusty64"
+  config.vm.box = "bento/ubuntu-20.04"
 
   config.vm.network :forwarded_port, guest: 8080, host: 8080
-  config.vm.synced_folder ".", "/vagrant"
+  config.vm.synced_folder ".", "/home/vagrant/code"
 
   config.vm.provision "shell", :args => [settings['aws_region'],settings['aws_access_key'],settings['aws_secret_key']], privileged: false, inline: <<-SHELL
     echo "Updating"
     sudo apt-get update -qq
+    sudo apt-get install build-essential
 
     if ! zip --version; then
         echo "Installing zip, unzip"
@@ -22,10 +23,11 @@ Vagrant.configure("2") do |config|
 
     if ! nodejs --version; then
         echo "Downloading node"
-        curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+        curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
 
         echo "Installing nodejs"
         sudo apt-get install -qq nodejs
+        sudo npm install --global yarn
     fi
 
     # Also export PATH now so we can install awscli
@@ -53,5 +55,12 @@ Vagrant.configure("2") do |config|
         touch ~/.aws/config
         printf '[default]\nregion = $3'
     fi
+
+    # Separate the node_modules folder from the host/guest binding
+    # This makes sure that yarn/npm can install using symlinks
+    mkdir /home/vagrant/vagrant_node_modules
+    mkdir /home/vagrant/code/node_modules
+
+    sudo mount --bind /home/vagrant/vagrant_node_modules /home/vagrant/code/node_modules
   SHELL
 end
